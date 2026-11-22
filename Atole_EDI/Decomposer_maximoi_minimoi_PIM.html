@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Décomposer une tâche complexe : maximoi, minimoi et PIM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Mono:wght@400;500&display=swap">
+<style>
+/* Fenêtre façon « Configuration du système » de KDE : barre latérale, une page à la fois, cadres Breeze. */
+:root {
+  --win: #EFF0F1; --view: #FCFCFC; --view-alt: #F3F4F5; --line: #D3D7DB; --line-strong: #BDC3C7;
+  --ink: #232629; --ink-2: #4A5056; --ink-3: #676E75;
+  --accent: #3DAEE9; --accent-ink: #1D6FA0; --accent-tint: rgba(61,174,233,.14); --accent-line: rgba(61,174,233,.6);
+  --good: #27AE60; --good-tint: rgba(39,174,96,.14); --warn: #E67700; --warn-tint: rgba(230,119,0,.13);
+  --bad: #DA4453; --bad-tint: rgba(218,68,83,.12); --neutral-tint: rgba(103,110,117,.12);
+  /* I, P, M : trois teintes discrètes, toujours dans le même ordre (signalement) */
+  --kI: #2980B9; --kP: #8E44AD; --kM: #16A085;
+  --shadow: 0 1px 2px rgba(35,38,41,.06);
+  --font: "Noto Sans", "Noto Sans UI", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "Noto Sans Mono", "Hack", ui-monospace, monospace; --r: 5px;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --win: #31363B; --view: #232629; --view-alt: #2A2E32; --line: #41474D; --line-strong: #565D64;
+  --ink: #EFF0F1; --ink-2: #C8CDD1; --ink-3: #9EA6AD; --accent-ink: #7CC7F0; --accent-tint: rgba(61,174,233,.18);
+  --good-tint: rgba(39,174,96,.2); --warn-tint: rgba(224,108,0,.2); --bad-tint: rgba(218,68,83,.2); --neutral-tint: rgba(158,166,173,.14);
+  --kI: #4DA3DB; --kP: #B07CC6; --kM: #2FC2A4; --shadow: none; color-scheme: dark; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--win); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 3px var(--accent-tint); }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent-ink); }
+.muted { color: var(--ink-3); } .small { font-size: 13px; } .tnum { font-variant-numeric: tabular-nums; }
+.lbl { display: block; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 3px; }
+
+/* Fenêtre */
+.app { display: grid; grid-template-columns: 260px minmax(0,1fr); min-height: 100vh; }
+.side { background: var(--view); border-right: 1px solid var(--line); padding: 18px 0; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.side-head { padding: 0 18px; display: grid; gap: 2px; }
+.side-kicker { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.side-title { font-size: 18px; font-weight: 600; }
+.side-sub { font-size: 13px; color: var(--ink-3); }
+.navgroup { display: grid; gap: 2px; padding: 0 8px 8px; }
+.navlab { font-size: 12px; font-weight: 600; color: var(--ink-3); padding: 6px 10px 2px; }
+.nav-btn { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border: 1px solid transparent; border-radius: var(--r); background: none; cursor: pointer; text-align: left; font-size: 14.5px; }
+.nav-btn > svg { color: var(--ink-2); flex: none; }
+.nav-btn:hover { background: var(--accent-tint); }
+.nav-btn[aria-current="page"] { background: var(--accent-tint); border-color: var(--accent-line); font-weight: 600; }
+.nav-btn .tick { margin-left: auto; color: var(--good); display: flex; }
+.side-foot { margin-top: auto; padding: 0 18px; font-size: 12px; color: var(--ink-3); }
+.main { min-width: 0; padding: 28px clamp(16px,3.4vw,44px) 40px; }
+.page { max-width: 1040px; margin: 0 auto; display: grid; gap: 18px; }
+.page-head { display: grid; gap: 4px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.page-head h1 { font-size: 26px; font-weight: 600; }
+.page-head p { color: var(--ink-2); }
+.pager { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 6px; }
+
+/* Composants Breeze */
+.frame { background: var(--view); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); min-width: 0; }
+.frame-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding: 14px 18px 0; }
+.frame-head h2 { font-size: 16.5px; font-weight: 600; }
+.frame-head .hint { font-size: 13px; color: var(--ink-3); }
+.frame-body { padding: 12px 18px 18px; display: grid; gap: 12px; min-width: 0; }
+.msg { display: grid; grid-template-columns: 20px minmax(0,1fr); gap: 10px; align-items: start; padding: 10px 14px; border: 1px solid var(--accent-line); background: var(--accent-tint); border-radius: var(--r); }
+.msg > svg { margin-top: 2px; color: var(--accent-ink); }
+.msg.good { border-color: var(--good); background: var(--good-tint); } .msg.good > svg { color: var(--good); }
+.msg.warn { border-color: var(--warn); background: var(--warn-tint); } .msg.warn > svg { color: var(--warn); }
+.msg.bad { border-color: var(--bad); background: var(--bad-tint); } .msg.bad > svg { color: var(--bad); }
+.section-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--ink-2); padding-top: 6px; }
+.section-head::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 500; border: 1px solid var(--line-strong); background: var(--view); white-space: nowrap; }
+.chip.warn { border-color: var(--warn); background: var(--warn-tint); } .chip.neutral { background: var(--neutral-tint); border-color: transparent; }
+.btnchip { cursor: pointer; } .btnchip:hover { border-color: var(--accent); background: var(--accent-tint); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view); cursor: pointer; font-size: 14px; }
+.btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-tint); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { border-color: var(--accent); background: var(--accent-tint); font-weight: 600; }
+.btn.danger { border-color: var(--bad); background: var(--bad-tint); }
+.ibtn { display: inline-grid; place-items: center; width: 30px; height: 30px; border: 1px solid transparent; border-radius: var(--r); background: none; cursor: pointer; color: var(--ink-2); }
+.ibtn:hover:not(:disabled) { border-color: var(--line-strong); background: var(--accent-tint); }
+.ibtn:disabled { opacity: .3; cursor: default; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .row.between { justify-content: space-between; } .row.end { justify-content: flex-end; } .row.wrap { gap: 12px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+.cols3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+.cols3 h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.cols3 p { color: var(--ink-2); font-size: 14.5px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.frame-body > .btn, .frame-body > .row > .btn { justify-self: start; }
+.note { padding: 9px 12px; background: var(--view-alt); border-left: 2px solid var(--accent); border-radius: 0 var(--r) var(--r) 0; font-size: 14.5px; }
+.notes { display: grid; gap: 8px; }
+blockquote { margin: 0; padding: 7px 12px; border-left: 2px solid var(--line-strong); background: var(--view-alt); border-radius: 0 var(--r) var(--r) 0; font-size: 14.5px; color: var(--ink-2); }
+ul.tight { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.big { font-size: 40px; font-weight: 600; } .big2 { font-size: 16px; }
+.q { font-size: 16.5px; font-weight: 500; }
+
+/* Numéros de niveau */
+.num { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line-strong); font-size: 12.5px; font-weight: 600; color: var(--ink-2); background: var(--view); }
+.num.done { border-color: var(--good); background: var(--good-tint); color: var(--good); }
+
+/* Accueil */
+.steplist { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.linkrow { width: 100%; display: flex; gap: 10px; align-items: center; text-align: left; padding: 7px 10px; border: 1px solid transparent; border-radius: var(--r); background: none; cursor: pointer; }
+.linkrow:hover { background: var(--accent-tint); border-color: var(--accent-line); }
+.lr-t { display: block; font-weight: 600; } .lr-s { display: block; font-size: 13.5px; color: var(--ink-3); }
+
+/* Onglets et pastilles */
+.tabs { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--line); }
+.tab { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border: 1px solid transparent; border-bottom: none; border-radius: var(--r) var(--r) 0 0; background: none; cursor: pointer; font-size: 14px; color: var(--ink-2); margin-bottom: -1px; }
+.tab:hover { color: var(--ink); background: var(--accent-tint); }
+.tab[aria-selected="true"] { background: var(--view); border-color: var(--line); color: var(--ink); font-weight: 600; box-shadow: inset 0 2px 0 var(--accent); }
+.tab svg { color: var(--good); }
+.dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.dot { width: 32px; height: 32px; border-radius: var(--r); border: 1px solid var(--line-strong); background: var(--view); cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+.dot:hover { border-color: var(--accent); }
+.dot[aria-selected="true"], .dot.cur { border-color: var(--accent); background: var(--accent-tint); color: var(--ink); }
+.dot.done { box-shadow: inset 0 -3px 0 var(--good); }
+.stages { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.stage { display: grid; gap: 4px; }
+
+/* Fiches Comprendre */
+.card .frame-body p { max-width: 72ch; }
+.tree { display: grid; justify-items: center; gap: 22px; padding: 6px 0 4px; position: relative; }
+.node { display: grid; text-align: center; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view-alt); font-weight: 600; }
+.node small { font-weight: 400; color: var(--ink-3); font-size: 12.5px; }
+.node.max { border-color: var(--accent); background: var(--accent-tint); }
+.branches { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; width: 100%; max-width: 620px; position: relative; }
+.branches::before { content: ""; position: absolute; top: -12px; left: 12.5%; right: 12.5%; height: 1px; background: var(--line-strong); }
+.branches .node::before { content: ""; position: absolute; }
+.branches .node { position: relative; }
+.branches .node::after { content: ""; position: absolute; top: -12px; left: 50%; width: 1px; height: 12px; background: var(--line-strong); }
+.tree .max::after { content: ""; position: absolute; }
+.pimdef { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.pimdef > div { padding: 10px 12px; border: 1px solid var(--line); border-top: 3px solid; border-radius: var(--r); background: var(--view-alt); }
+.pimdef .kI { border-top-color: var(--kI); } .pimdef .kP { border-top-color: var(--kP); } .pimdef .kM { border-top-color: var(--kM); }
+.pimdef p { font-size: 14.5px; }
+
+/* PIM */
+.pim { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--view); }
+.pim-tag { padding: 5px 12px; font-size: 12.5px; font-weight: 600; background: var(--view-alt); border-bottom: 1px solid var(--line); }
+.pim-row { display: grid; grid-template-columns: 128px minmax(0,1fr); gap: 10px; padding: 7px 12px; border-left: 3px solid; }
+.pim-row + .pim-row, .pim.edit > * + * { border-top: 1px solid var(--line); }
+.kI.pim-row, .field.kI { border-left-color: var(--kI); } .kP.pim-row, .field.kP { border-left-color: var(--kP); } .kM.pim-row, .field.kM { border-left-color: var(--kM); }
+.pim-lab { font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding-top: 2px; }
+.kI .pim-lab, .kI > .field-lab, .pimdef .kI .pim-lab { color: var(--kI); } .kP .pim-lab, .kP > .field-lab, .pimdef .kP .pim-lab { color: var(--kP); } .kM .pim-lab, .kM > .field-lab, .pimdef .kM .pim-lab { color: var(--kM); }
+.blank { color: var(--ink-3); font-style: italic; }
+.pim.edit .field { border-left-width: 3px; border-left-style: solid; padding: 7px 12px; }
+.trame { display: grid; gap: 12px; }
+.maxi, .conn { padding: 9px 12px; border: 1px solid var(--accent-line); background: var(--accent-tint); border-radius: var(--r); font-weight: 500; }
+.conn { border-color: var(--line); background: var(--view-alt); font-weight: 400; }
+.expert { display: grid; gap: 4px; }
+.minis { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.mini-t { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 6px; }
+.mini-t.big2 { display: block; }
+.src { margin-top: 2px; }
+
+/* Glossaire */
+.search { padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view); min-width: 240px; }
+.gloss { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.gl { padding: 12px 16px; display: grid; gap: 6px; align-content: start; }
+.gl-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.gl h3 { font-size: 15.5px; font-weight: 600; }
+.gl-ex { font-size: 14px; color: var(--ink-2); padding: 6px 10px; background: var(--view-alt); border-radius: var(--r); }
+.gl-ex .lbl { display: inline; margin-right: 6px; }
+
+/* Quiz */
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--accent); }
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view); cursor: pointer; }
+.opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-tint); }
+.opt.ok { border-color: var(--good); background: var(--good-tint); font-weight: 500; }
+.opt.ko { border-color: var(--bad); background: var(--bad-tint); }
+.opt:disabled { cursor: default; opacity: .6; } .opt.ok:disabled, .opt.ko:disabled { opacity: 1; }
+
+/* Pièges */
+.checklist { margin: 0; padding-left: 22px; display: grid; gap: 6px; font-size: 15.5px; }
+.checklist.small { font-size: 14px; gap: 3px; }
+.traps { display: grid; gap: 12px; }
+.trap h3 { font-size: 15.5px; font-weight: 600; }
+.trap .why { color: var(--ink-2); }
+.trap-cols { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.trap .fix { font-size: 14.5px; }
+.trap .test { font-size: 14.5px; padding: 7px 10px; background: var(--warn-tint); border-radius: var(--r); }
+.trap .test .lbl { display: inline; margin-right: 6px; color: var(--warn); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tbl { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.tbl td { padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl td:nth-child(2) { color: var(--ink-3); width: 20px; }
+
+/* Ordre */
+.order { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.order li { display: flex; align-items: center; gap: 10px; padding: 5px 6px 5px 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--view); }
+.order li.ok { border-color: var(--good); background: var(--good-tint); }
+.order li.ko { border-color: var(--warn); background: var(--warn-tint); }
+.order .ot { flex: 1; }
+.order .ob { display: flex; gap: 2px; }
+.order.edit .inp { flex: 1; min-width: 0; padding: 5px 8px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view); }
+.sw { display: inline-flex; gap: 4px; align-items: center; font-size: 13px; color: var(--ink-2); }
+
+/* Diagnostic */
+.ctx { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+ol.plain { margin: 0; padding-left: 22px; display: grid; gap: 3px; }
+.diag { border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px 10px; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 4px 14px; }
+.diag legend { padding: 0 4px; font-size: 14px; font-weight: 600; }
+.cb { display: flex; gap: 8px; align-items: flex-start; padding: 4px 6px; border-radius: var(--r); font-size: 14px; cursor: pointer; }
+.cb input { margin-top: 4px; accent-color: var(--accent); }
+.cb.ok { background: var(--good-tint); } .cb.ko { background: var(--bad-tint); } .cb.miss { background: var(--warn-tint); }
+.lint { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: 14px; }
+.lint li { display: flex; gap: 8px; align-items: baseline; }
+.lint .chip { flex: none; }
+
+/* Champs */
+.field { display: grid; gap: 3px; }
+.field-lab { font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
+.field textarea { width: 100%; resize: vertical; padding: 6px 9px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view); line-height: 1.45; }
+.field textarea:focus { border-color: var(--accent); }
+.ideas { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+/* Prompt */
+.copybox { display: grid; gap: 10px; padding: 12px 14px; border: 1px dashed var(--accent-line); border-radius: var(--r); background: var(--view-alt); }
+.copy-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+.copy-head > div:first-child { max-width: 560px; }
+.prompt { width: 100%; min-height: 240px; font-family: var(--mono); font-size: 12.5px; padding: 8px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view); resize: vertical; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: static; height: auto; padding: 12px 0 6px; border-right: 0; border-bottom: 1px solid var(--line); }
+  nav { display: flex; overflow-x: auto; gap: 4px; padding: 0 8px; }
+  .navgroup { display: flex; padding: 0; gap: 2px; }
+  .navlab, .side-foot, .side-sub { display: none; }
+  .nav-btn { white-space: nowrap; }
+  .two, .cols3, .grid3, .gloss, .trap-cols, .pimdef, .diag, .stages { grid-template-columns: 1fr; }
+  .pim-row { grid-template-columns: 1fr; gap: 0; }
+  .branches { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .branches::before, .branches .node::after { display: none; }
+}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<noscript>Cette application a besoin de JavaScript.</noscript>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function () {
+/* ================= Données pédagogiques ================= */
+
+const RULES = {
+  maximoi: "Le maximoi est un but de réussite formulé par l’apprenant (« Mon objectif est de… »), pas une activité (« jouer au jeu »).",
+  minimoi: "Les minimoi sont des étapes courtes, concrètes et ordonnées. On voit sans hésiter comment réaliser chacune. Seules les étapes où l’apprenant risque d’échouer ont besoin d’un PIM.",
+  I: "L’Intention commence par « Je veux » suivi d’un but précis.",
+  P: "La Perception désigne la cible de l’attention : je regarde, j’écoute, je sens, je revois dans ma tête, je réentends ma petite voix.",
+  M: "Le Mode d’action (ou Manière d’agir) est une seule action, physique ou mentale, que l’apprenant peut décider de faire avec la quasi-certitude d’y arriver. Elle sert l’intention.",
+  langue: "Le PIM est écrit avec « je », dans les mots de l’apprenant. Le vocabulaire théorique reste dans les objectifs destinés à l’adulte.",
+};
+
+const TRAPS = [
+  { id: "T1", n: 1, t: "Décrire le jeu au lieu de décrire la tête",
+    why: "Des minimoi décrivent l’installation ou les règles (distribuer, piocher, compter les points). Ces étapes demandent peu de concentration, alors que l’étape où l’apprenant échoue tient en un seul PIM.",
+    ex: "Minimoi : « Distribuer 5 cartes par joueur », « Compter les points », « Désigner le vainqueur ».",
+    fix: "Regrouper l’installation en une étape (« Je prépare la manche ») et donner la place gagnée aux étapes décisives : « Je récapitule », « Je vérifie avant que la boîte soit cachée ».",
+    test: "Si l’apprenant rate cette étape, rate-t-il la tâche ? Sinon, elle n’a sans doute pas besoin d’un PIM." },
+  { id: "T2", n: 2, t: "Un Mode d’action qui contient plusieurs actions",
+    why: "Le Mode d’action enchaîne deux, trois ou quatre actions. L’apprenant ne sait plus laquelle faire d’abord et son attention se disperse : c’est une double tâche.",
+    ex: "M : « Je compte les sardines, je mémorise leurs couleurs, j’associe un mot-clé à chacune et je répète. »",
+    fix: "Trois PIM qui s’enchaînent : « Je compte les sardines. » / « Je donne un mot-clé à chaque sardine. » / « Je répète ma liste jusqu’à ce que la carte soit retournée. »",
+    test: "Le Mode d’action contient-il « et », « puis », plusieurs verbes ou plusieurs puces ? Si oui, il y a sans doute plusieurs PIM." },
+  { id: "T3", n: 3, t: "Une action placée dans la Perception",
+    why: "La Perception est une cible. Des verbes comme « rechercher », « comparer », « associer » ou « sélectionner » disent ce qu’on fait de la cible : ils appartiennent au Mode d’action.",
+    ex: "P : « Rechercher et associer les éléments identiques en mémoire de travail. »",
+    fix: "P : « Je regarde ma carte et je revois la boîte dans ma tête. » M : « Je pose la carte si elle est dans ma boîte. »",
+    test: "Peut-on commencer la Perception par « Je regarde », « J’écoute », « Je sens », « Je revois dans ma tête » ou « Je réentends » ?" },
+  { id: "T4", n: 4, t: "Un Mode d’action qui ne sert pas l’intention",
+    why: "Le geste décrit ne permet pas d’atteindre l’intention : l’apprenant peut l’exécuter parfaitement sans rien réussir.",
+    ex: "I : « Je veux mémoriser les sardines. » M : « Je retourne la carte côté face. »",
+    fix: "M : « Je me redis dans ma tête un mot pour chaque sardine. » Le Mode d’action dit ce que fait la tête, pas seulement les mains.",
+    test: "Si l’apprenant fait exactement ce Mode d’action, atteint-il l’intention ?" },
+  { id: "T5", n: 5, t: "Parler en professionnel",
+    why: "L’apprenant lit son PIM et se le redit. « Boucle phonologique », « mémoire de travail » ou « inhiber » sont justes mais inutilisables pour lui. L’infinitif et le « on » l’éloignent aussi de la tâche.",
+    ex: "M : « Créer une boucle phonologique pour répéter le détail saillant. »",
+    fix: "M : « Je me redis avec ma petite voix le détail de chaque sardine. »",
+    test: "Un apprenant de l’âge visé comprendrait-il chaque mot ? Le PIM est-il écrit avec « je » ?" },
+];
+
+const GRID = [
+  "Mon Intention commence-t-elle par « Je veux » suivi d’un but ?",
+  "Ma Perception dit-elle sur quoi poser mon attention ?",
+  "Mon Mode d’action contient-il une seule action, que l’apprenant peut faire ?",
+  "Les trois s’enchaînent-ils logiquement, sans se répéter ?",
+  "Un apprenant de l’âge visé comprendrait-il chaque mot ?",
+];
+
+const VERBS_P = ["je regarde", "j’écoute", "je sens", "je touche", "je lis", "je revois dans ma tête", "je réentends ma petite voix", "j’imagine"];
+const PRO_TO_CHILD = [
+  ["boucle phonologique", "ma petite voix"],
+  ["mémoire de travail", "garder dans ma tête"],
+  ["inhiber, inhibition", "je freine, j’attends"],
+  ["interférence", "mélanger"],
+  ["encoder, trace mnésique", "retenir, ranger dans ma mémoire"],
+  ["visualiser", "je regarde (réel) / je revois dans ma tête (mental)"],
+];
+
+/* ---------- Glossaire : uniquement les mots utiles pour décomposer une tâche ---------- */
+const GLOSSARY = [
+  // ATOLE
+  { cat: "ATOLE", term: "Tâche complexe", def: "Tâche qu’on ne peut pas réussir d’un seul geste ni avec une seule intention : il faut l’organiser en plusieurs étapes.", ex: "« Faire une fiche de lecture » est une tâche complexe ; « noter le titre du livre » ne l’est pas." },
+  { cat: "ATOLE", term: "Maximoi", def: "Le rôle de celui qui planifie. Quand je suis Maximoi, je ne fais rien : je réfléchis au but et aux étapes pour l’atteindre.", ex: "Avant de cuisiner, Maximoi lit la recette et prévoit : ingrédients, pesée, mélange, cuisson." },
+  { cat: "ATOLE", term: "Minimoi", def: "Le rôle de celui qui exécute. Quand je suis minimoi, je ne réfléchis pas au plan : j’accomplis une seule étape à la fois. Par extension, chaque étape s’appelle un minimoi.", ex: "Minimoi pèse le sucre, et seulement le sucre, jusqu’à la fin de la pesée." },
+  { cat: "ATOLE", term: "Mini-mission", def: "Une étape concrète, ciblée et courte, issue de la décomposition. Elle tient dans une bulle de concentration de quelques minutes.", ex: "« Récupérer trois images d’objets sphériques et les copier dans le diaporama »." },
+  { cat: "ATOLE", term: "Niveau de découpage", def: "La finesse de la décomposition. Il est bon quand on voit sans hésiter comment réaliser chaque étape. Trop fin, c’est lassant ; trop grossier, on ne sait pas par où commencer.", ex: "« Sortir les œufs » puis « sortir le beurre » : trop fin. « Préparer un gâteau » : trop grossier." },
+  { cat: "ATOLE", term: "Niveau visé", def: "L’âge, la classe ou le profil de l’apprenant pour qui on décompose. Il justifie le niveau de détail.", ex: "À 4 ans avec un trouble moteur, on découpe la tenue du crayon ; à 9 ans, ce n’est plus utile." },
+  { cat: "ATOLE", term: "Intention (I)", def: "Ce que je cherche à obtenir, maintenant. Une intention claire est concrète, précise et à court terme. Elle commence par « Je veux ».", ex: "« Je veux garder le jaune d’œuf entier dans la coquille. »" },
+  { cat: "ATOLE", term: "Une seule intention à la fois", def: "Garder plusieurs intentions en tête en même temps disperse l’attention et crée de la surcharge mentale. ATOLE apprend à en privilégier une seule.", ex: "Pendant la pesée, je ne pense pas encore au four." },
+  { cat: "ATOLE", term: "Perception (P)", def: "La cible de mon attention : ce que je regarde, j’écoute, je sens, ou ce que je revois et réentends dans ma tête. Elle doit pouvoir être repérée presque immédiatement.", ex: "« Je regarde le jaune d’œuf et le bord de la coquille. »" },
+  { cat: "ATOLE", term: "Perception externe", def: "Une perception que d’autres personnes peuvent partager avec moi.", ex: "La voix de la maîtresse, la ligne à découper, le nombre affiché sur la balance." },
+  { cat: "ATOLE", term: "Perception interne (mentale)", def: "Une perception que je suis le seul à percevoir, dans ma tête.", ex: "L’image de la courbe que doit suivre ma boulette de papier ; ma petite voix qui répète une liste." },
+  { cat: "ATOLE", term: "Mode d’action (M)", def: "Aussi appelé Manière d’agir. La seule action, physique ou mentale, que je décide de faire pour atteindre l’intention, avec la quasi-certitude d’y arriver.", ex: "« Je manipule doucement les deux moitiés de la coquille. » « Je me redis la liste avec ma petite voix. »" },
+  { cat: "ATOLE", term: "PIM", def: "Un mode d’emploi pour se concentrer : une Perception, une Intention et un Mode d’action. Il verrouille l’attention sur une étape souvent brève. Une tâche peut demander plusieurs PIM qui se suivent ou alternent.", ex: "Toucher une forme cachée (PIM 1), puis la dessiner (PIM 2), en alternance." },
+  { cat: "ATOLE", term: "PIM d’expert", def: "Un PIM plus complexe, efficace pour quelqu’un d’expérimenté, mais trop difficile pour un débutant. Pour un novice, on le décompose en plusieurs PIM simples.", ex: "« Je raconte le film » suffit à un expert ; un débutant a besoin de PIM pour le lieu, l’époque, les personnages, les actions." },
+  { cat: "ATOLE", term: "Image mentale", def: "Une image que je fabrique et que je revois dans ma tête. C’est une perception interne très utile dans les PIM.", ex: "Je lis « un éléphant rose » et je le vois dans ma tête, la trompe levée." },
+  { cat: "ATOLE", term: "Petite voix", def: "La voix intérieure avec laquelle je me redis un mot, une phrase ou une liste sans parler à voix haute.", ex: "Je me redis « bonnet, écharpe, gant » pour ne pas les oublier." },
+  { cat: "ATOLE", term: "Conversion", def: "Une action mentale qui transforme une perception d’une modalité en une autre : des mots entendus en images, une image en geste, une image en sensation.", ex: "Mon amie m’explique le chemin et je me fais le film du trajet dans ma tête." },
+  { cat: "ATOLE", term: "OUIN", def: "« OUbli de l’INtention » : après une distraction, je ne sais plus ce que je voulais faire. Des intentions claires et courtes protègent des OUIN.", ex: "« Mais qu’est-ce que je venais chercher dans la cuisine, déjà ? »" },
+  { cat: "ATOLE", term: "Bulle de concentration", def: "Un court moment entièrement consacré à une seule mini-mission, en oubliant le reste.", ex: "« Je me donne 5 minutes pour relire ma leçon, et rien d’autre. »" },
+  { cat: "ATOLE", term: "Connaissance ou procédure réactivée", def: "Le savoir ou la méthode que l’apprenant doit rappeler en mémoire pour réussir la tâche. Elle se note sur une fiche à part dans la trame.", ex: "Le schéma narratif pour raconter un film ; « 10 unités = 1 dizaine » pour la retenue." },
+  // Charge cognitive
+  { cat: "Charge cognitive", term: "Mémoire de travail", def: "L’espace mental où je garde et je manipule quelques informations pendant que je travaille. Il est très limité.", ex: "Garder en tête un numéro de téléphone le temps de le composer." },
+  { cat: "Charge cognitive", term: "Double tâche", def: "Faire deux tâches cognitives en même temps. Cela pose problème quand l’une d’elles n’est pas automatisée.", ex: "Écrire et réfléchir à l’orthographe en même temps, pour un élève qui forme encore ses lettres." },
+  { cat: "Charge cognitive", term: "Surcharge cognitive", def: "Trop d’informations ou de tâches à traiter à la fois : la mémoire de travail déborde et l’apprentissage s’arrête.", ex: "Un Mode d’action avec quatre actions à retenir et à exécuter." },
+  { cat: "Charge cognitive", term: "Charge intrinsèque", def: "La difficulté propre à la tâche : nombre d’éléments à traiter ensemble et liens entre eux. La décomposer en minimoi la répartit dans le temps.", ex: "Résoudre un problème demande de comprendre, choisir l’opération, calculer et vérifier." },
+  { cat: "Charge cognitive", term: "Charge extrinsèque", def: "L’effort inutile causé par la façon de présenter la tâche. Il faut la réduire.", ex: "Du jargon dans un PIM, des informations éparpillées sur plusieurs pages." },
+  { cat: "Charge cognitive", term: "Charge essentielle", def: "L’effort utile consacré à comprendre et à construire la méthode. C’est celui qu’on veut favoriser.", ex: "Se demander pourquoi l’étape de vérification vient avant la phrase réponse." },
+  { cat: "Charge cognitive", term: "Exemple résolu", def: "Un exemple complet et commenté qu’on étudie avant de produire soi-même. Pour un débutant, il est plus efficace que chercher seul.", ex: "Étudier une décomposition complète de « Poser une addition » avant d’en écrire une." },
+  { cat: "Charge cognitive", term: "Estompage", def: "Retirer l’aide peu à peu : exemple complet, puis exemple à compléter, puis tâche à faire seul.", ex: "PIM avec le M à trouver, puis P et M, puis I, P et M." },
+  { cat: "Charge cognitive", term: "Renversement lié à l’expertise", def: "Une aide utile au débutant devient inutile, voire gênante, quand l’apprenant progresse.", ex: "On regroupe plusieurs minimoi en un seul quand les étapes sont automatisées." },
+  { cat: "Charge cognitive", term: "Double codage", def: "Associer des mots et des images pour mieux retenir et mieux comprendre.", ex: "Se redire le nom d’une sardine et revoir son image dans sa tête." },
+  // Multimédia
+  { cat: "Multimédia", term: "Segmentation", def: "Présenter un contenu complexe en petites parties que l’apprenant fait avancer à son rythme.", ex: "Une fiche par minimoi plutôt qu’une page qui contient tout." },
+  { cat: "Multimédia", term: "Signalement", def: "Mettre en évidence la structure et l’essentiel pour guider le regard.", ex: "Les étiquettes I, P et M toujours placées au même endroit et dans le même ordre." },
+  { cat: "Multimédia", term: "Cohérence", def: "Retirer tout ce qui n’aide pas à apprendre : décor, anecdotes, détails superflus.", ex: "Une fiche PIM sans image décorative ni règle du jeu recopiée." },
+  { cat: "Multimédia", term: "Pré-entraînement", def: "Apprendre les mots et les notions clés avant d’aborder la tâche complexe.", ex: "Lire le glossaire et faire le quiz avant de décomposer une tâche." },
+  { cat: "Multimédia", term: "Personnalisation", def: "S’adresser à l’apprenant de façon directe et conversationnelle.", ex: "« Je regarde ma carte » plutôt que « Observation de la carte »." },
+];
+
+/* ---------- Quiz ---------- */
+const QUIZZES = [
+  { id: "vocabulaire", title: "Vocabulaire", sub: "Les mots de la décomposition", qs: [
+    { q: "Quand je suis Maximoi…", o: ["j’exécute les étapes une par une", "je planifie sans rien faire", "je vérifie le résultat final", "je choisis le PIM le plus rapide"], a: 1, e: "Maximoi planifie : il réfléchit au but et aux étapes. Minimoi exécute sans réfléchir au plan." },
+    { q: "Une mini-mission est…", o: ["une étape concrète et courte qui tient dans une bulle de concentration", "l’objectif global de la tâche", "un exercice de rattrapage", "une perception mentale"], a: 0, e: "La mini-mission (un minimoi) est une étape concrète, ciblée, de courte durée." },
+    { q: "Dans un PIM, la lettre P désigne…", o: ["la Procédure", "la Préparation", "la Perception", "la Priorité"], a: 2, e: "P = Perception : la cible de l’attention, externe ou interne." },
+    { q: "Lequel est une perception interne ?", o: ["La voix de la maîtresse", "La ligne à découper", "Le chiffre sur la balance", "L’image de la boîte que je revois dans ma tête"], a: 3, e: "Une perception interne n’est perçue que par moi : image mentale, petite voix." },
+    { q: "Le « Mode d’action » s’appelle aussi…", o: ["Manière d’agir", "Mode d’emploi", "Minimoi", "Méthode active"], a: 0, e: "Dans certains documents ATOLE, la Manière d’agir est appelée Mode d’action." },
+    { q: "« Mais qu’est-ce que je venais chercher dans la cuisine ? » C’est…", o: ["un PAM", "un OUIN", "une conversion", "une double tâche"], a: 1, e: "OUIN = OUbli de l’INtention, souvent après une distraction." },
+    { q: "« Je me redis la liste sans parler à voix haute » utilise…", o: ["la petite voix", "une perception externe", "le maximoi", "la charge extrinsèque"], a: 0, e: "La petite voix est la voix intérieure : une perception et une action mentales." },
+    { q: "Je transforme des mots entendus en un film dans ma tête. C’est…", o: ["un OUIN", "une conversion", "un PIM d’expert", "une intention"], a: 1, e: "Une conversion transforme une modalité (mots entendus) en une autre (images mentales)." },
+  ]},
+  { id: "notions", title: "Concepts ATOLE", sub: "Décomposer et écrire des PIM", qs: [
+    { q: "Lequel est un bon maximoi ?", o: ["Jouer au jeu des Sardines", "Faire l’exercice 4", "Retrouver toutes les sardines de la boîte sans me tromper", "Être concentré"], a: 2, e: "Le maximoi est un but de réussite, pas une activité ni un état vague." },
+    { q: "Le bon niveau de découpage est celui où…", o: ["chaque étape dure moins d’une minute", "on voit sans hésiter comment réaliser chaque étape", "il y a exactement huit minimoi", "chaque geste a son minimoi"], a: 1, e: "Trop fin, c’est lassant ; trop grossier, on ne sait pas par où commencer. Le bon niveau dépend de l’apprenant." },
+    { q: "Quand un PIM est-il superflu ?", o: ["Quand l’apprenant réussit déjà l’étape en faisant « comme d’habitude »", "Quand l’étape est courte", "Quand la perception est mentale", "Jamais : chaque minimoi doit avoir un PIM"], a: 0, e: "Un PIM est utile quand il y a un risque d’échec ; sinon, il complique les choses (piège 1)." },
+    { q: "Laquelle est une bonne Perception ?", o: ["Rechercher les mots qui ont du sens", "Je compare les cartes", "Je regarde la couleur du bord des cookies", "Faire attention"], a: 2, e: "Une Perception nomme une cible précise. Rechercher et comparer sont des actions (piège 3)." },
+    { q: "Lequel est un bon Mode d’action ?", o: ["Je mémorise, puis je vérifie et je pose la carte", "Je me redis avec ma petite voix un mot pour chaque sardine", "Mobiliser ma mémoire de travail", "Je retourne la carte"], a: 1, e: "Une seule action, faisable, écrite avec « je », qui sert l’intention de mémoriser." },
+    { q: "Toucher une forme cachée puis la dessiner demande…", o: ["un seul PIM", "deux PIM utilisés en alternance", "aucun PIM", "un PIM d’expert"], a: 1, e: "Les PIM verrouillent l’attention sur des éléments brefs : ici, un PIM pour toucher et un pour dessiner." },
+    { q: "Un élève propose : P = la corbeille, I = mettre le panier, M = lancer la boulette. Le problème ?", o: ["Il est trop précis", "Il est trop vague pour aider à réussir", "La perception est interne", "Il contient du jargon"], a: 1, e: "Lachaux le montre : le PIM utile visait l’image mentale de la trajectoire (P) et un geste qui suit cette courbe (M)." },
+    { q: "Pourquoi garder une seule intention à la fois ?", o: ["Pour aller plus vite", "Pour éviter la surcharge mentale et les distractions", "Parce que le cerveau ne peut avoir qu’une idée", "Pour plaire à l’enseignant"], a: 1, e: "Accumuler les intentions disperse l’attention et fatigue ; une intention claire permet de trier l’utile de l’inutile." },
+  ]},
+  { id: "charge", title: "Charge cognitive et multimédia", sub: "Pourquoi décomposer et comment présenter", qs: [
+    { q: "Décomposer une tâche en minimoi agit surtout sur…", o: ["la charge intrinsèque, répartie dans le temps", "la mélatonine", "la charge essentielle, supprimée", "la motivation uniquement"], a: 0, e: "On ne supprime pas la difficulté de la tâche : on la répartit en éléments traités l’un après l’autre." },
+    { q: "Du jargon dans un PIM augmente…", o: ["la charge essentielle", "la charge extrinsèque", "le double codage", "le transfert"], a: 1, e: "L’apprenant dépense de l’effort à décoder des mots inutiles pour agir : c’est de la charge extrinsèque." },
+    { q: "Pour un débutant, l’effet de l’exemple résolu signifie…", o: ["qu’il vaut mieux chercher seul d’abord", "qu’étudier des exemples complets et commentés est plus efficace que chercher seul", "qu’il faut donner la réponse sans explication", "qu’un seul exemple suffit"], a: 1, e: "Étudier des exemples résolus libère la mémoire de travail pour comprendre la méthode." },
+    { q: "L’estompage consiste à…", o: ["retirer l’aide progressivement", "effacer les erreurs", "réduire la police", "supprimer le maximoi"], a: 0, e: "Exemple complet → exemple à compléter → tâche seule : c’est la progression de cette application." },
+    { q: "Regrouper des minimoi quand les étapes sont automatisées applique…", o: ["le principe de redondance", "le renversement lié à l’expertise", "la segmentation", "le double codage"], a: 1, e: "Une aide utile au débutant devient superflue pour l’expert : on l’allège." },
+    { q: "Une fiche par minimoi, que l’apprenant fait défiler, applique…", o: ["la segmentation", "la cohérence", "la modalité", "la personnalisation"], a: 0, e: "Segmenter : petites parties, au rythme de l’apprenant." },
+    { q: "Écrire « Je regarde ma carte » plutôt que « Observation de la carte » applique…", o: ["le signalement", "la personnalisation", "la redondance", "le pré-entraînement"], a: 1, e: "S’adresser à l’apprenant directement, avec « je », facilite l’engagement." },
+  ]},
+];
+
+/* ---------- Niveau 1 : exemples résolus ---------- */
+const WORKED = [
+  { id: "addition", title: "Poser une addition", niveau: "CE1", source: "Adapté de « Poser une addition » (G. Baratte, R. Samier & S. Jacques)",
+    objectif: "Poser et calculer une addition de deux nombres à deux chiffres.",
+    maximoi: "Mon objectif est de poser et de calculer une addition sans erreur.",
+    connaissance: "La retenue : 10 unités font 1 dizaine.",
+    steps: [
+      { m: "Poser l’opération en alignant les unités", I: "Je veux placer les deux nombres en colonnes.", P: "Je regarde le chiffre de droite de chaque nombre : c’est le chiffre des unités.", M: "J’écris les deux nombres l’un sous l’autre, unités sous unités." },
+      { m: "Additionner les unités", I: "Je veux trouver le chiffre des unités du résultat.", P: "Je regarde les deux chiffres de la colonne des unités.", M: "J’écris en bas de la colonne l’unité de la somme de ces deux chiffres." },
+      { m: "Ne pas oublier la retenue", I: "Je veux garder la dizaine pour la colonne suivante.", P: "Je regarde ma somme des unités : est-elle égale ou plus grande que 10 ?", M: "Si oui, j’écris 1 dans le rond des retenues, en haut des dizaines." },
+      { m: "Additionner les dizaines", I: "Je veux trouver le chiffre des dizaines du résultat.", P: "Je regarde tous les chiffres de la colonne des dizaines, retenue comprise.", M: "J’additionne la colonne en commençant par la retenue." },
+      { m: "Vérifier le résultat", I: "Je veux savoir si mon résultat est possible.", P: "Je regarde mon résultat et les deux nombres de départ.", M: "Je vérifie que mon résultat est plus grand que chacun des deux nombres." },
+    ],
+    notes: [
+      ["Maximoi", "C’est un but de réussite (« sans erreur ») : on sait quand il est atteint."],
+      ["Découpage", "La retenue a son propre minimoi : c’est là que les élèves de CE1 échouent le plus. Le document d’origine l’intégrait au Mode d’action des unités, qui contenait alors trois actions (piège 2)."],
+      ["Perception", "« Le chiffre de droite » donne une cible repérable au premier coup d’œil, même pour un élève qui confond encore unités et dizaines."],
+      ["Contrôle", "Le dernier minimoi est une vérification : l’apprenant contrôle son résultat avant de passer à autre chose."],
+    ],
+    ask: "Pourquoi la retenue mérite-t-elle un minimoi à elle seule ?" },
+  { id: "memoire", title: "Réussir un jeu de mémoire visuelle", niveau: "Jeune enfant (CAMSP)", source: "Adapté de « Réussir un jeu de mémoire visuelle » (A. Houilliez)",
+    objectif: "Mémoriser plusieurs images disposées dans un tableau et les replacer.",
+    maximoi: "Mon objectif est de remettre chaque vêtement dans la bonne case du tableau.",
+    connaissance: "Je retiens mieux quand je me dis le mot ET que je revois l’image.",
+    steps: [
+      { m: "Regarder le tableau case par case", I: "Je veux voir tous les vêtements et leur place.", P: "Je regarde les cases du tableau, de gauche à droite, ligne par ligne.", M: "Je pointe chaque vêtement du doigt, dans l’ordre des lignes." },
+      { m: "Garder les vêtements dans ma tête", I: "Je veux garder chaque vêtement et sa place dans ma tête.", P: "Je regarde un vêtement et sa case.", M: "Je me dis avec ma petite voix : « le bonnet en haut à gauche »." },
+      { m: "Vérifier avant que le tableau soit caché", I: "Je veux être sûr de n’avoir oublié aucun vêtement.", P: "Je revois le tableau dans ma tête.", M: "Je compare mon image dans ma tête avec le vrai tableau, tant qu’il est encore visible." },
+      { m: "Replacer les images", I: "Je veux remettre chaque vêtement à sa place.", P: "Je réentends ma petite voix : « le bonnet en haut à gauche ».", M: "Je pose l’image du vêtement dans la case que je viens de me redire." },
+    ],
+    notes: [
+      ["Perceptions mentales", "Les PIM 3 et 4 visent des cibles internes : l’image du tableau, la petite voix. Elles sont aussi réelles qu’une perception externe."],
+      ["Double codage", "Le PIM 2 associe mot (petite voix) et image (le vêtement dans sa case)."],
+      ["S’autotester", "Le PIM 3 fait vérifier pendant que le modèle est encore visible : c’est l’étape qui transforme « regarder » en « apprendre »."],
+      ["Langue", "« Le bonnet en haut à gauche » : des mots d’enfant, aucun jargon."],
+    ],
+    ask: "Pourquoi le minimoi de vérification se place-t-il avant que le tableau soit caché ?" },
+  { id: "cookies", title: "Faire des cookies", niveau: "Dès 6 ans", source: "Adapté de « Faire des cookies » (N. Hourcade, R. Samier & S. Jacques)",
+    objectif: "Préparer des cookies en suivant une recette.",
+    maximoi: "Mon objectif est de réussir des cookies dorés en suivant la recette.",
+    connaissance: "Lire une recette : la liste des ingrédients, puis les étapes dans l’ordre.",
+    steps: [
+      { m: "Réunir les ingrédients", I: "Je veux avoir tous les ingrédients sur la table.", P: "Je lis la liste des ingrédients, une ligne à la fois.", M: "Je coche chaque ingrédient dès qu’il est posé sur la table." },
+      { m: "Mettre la balance à zéro", I: "Je veux peser à partir de zéro.", P: "Je regarde l’écran de la balance, avec le bol vide posé dessus.", M: "J’appuie sur le bouton de tare jusqu’à voir 0." },
+      { m: "Peser chaque ingrédient", I: "Je veux verser la quantité de la recette.", P: "Je regarde le nombre qui augmente sur l’écran.", M: "Je verse doucement et je m’arrête au nombre de la recette." },
+      { m: "Former les boules de pâte", I: "Je veux des boules de la même taille.", P: "Je sens la quantité de pâte dans ma main.", M: "Je roule une boule de la taille d’une noix entre mes paumes." },
+      { m: "Surveiller la cuisson", I: "Je veux sortir les cookies quand ils sont dorés, pas brûlés.", P: "Je regarde la couleur du bord des cookies à travers la vitre.", M: "Je sors la plaque dès que les bords sont dorés." },
+    ],
+    notes: [
+      ["Le bon tri", "Prendre les ustensiles ou préchauffer le four n’ont pas de PIM : l’enfant de 6 ans les réussit déjà. Seules les étapes à risque en ont un (piège 1)."],
+      ["Une seule action", "« Je verse doucement et je m’arrête au nombre » décrit un seul geste contrôlé : verser jusqu’à un repère."],
+      ["Perceptions variées", "Vue (écran, couleur), toucher (pâte dans la main) : la Perception choisit le sens qui permet de contrôler l’action."],
+      ["Ce qui a changé", "Dans le document d’origine, le Mode d’action de la cuisson contenait trois actions (remettre à cuire, sortir, éteindre). Ici, une seule."],
+    ],
+    ask: "Pourquoi « Prendre les ustensiles » n’a-t-il pas de PIM ici ?" },
+  { id: "film", title: "Raconter un film : PIM d’expert et PIM du débutant", niveau: "Collège", source: "Adapté de « Raconter un film » (R. Samier, S. Jacques & F. Le Houezec)",
+    objectif: "Mémoriser les informations importantes d’un film pour le raconter.",
+    maximoi: "Mon objectif est de raconter l’histoire du film pour qu’on la comprenne.",
+    connaissance: "Le schéma narratif : situation initiale, élément déclencheur, péripéties, dénouement, situation finale.",
+    expert: { I: "Je veux raconter un film que j’ai vu.", P: "Je revois dans ma tête les images du film.", M: "Je raconte l’histoire du film." },
+    steps: [
+      { m: "Repérer quand se passe l’histoire", I: "Je veux savoir à quelle époque se passe le film.", P: "Je regarde les indices de temps : vêtements, objets, voitures.", M: "Je me dis le nom de l’époque avec ma petite voix." },
+      { m: "Repérer où se passe l’histoire", I: "Je veux savoir dans quels lieux se passe le film.", P: "Je regarde les décors des scènes.", M: "Je me dis le nom de chaque nouveau lieu." },
+      { m: "Retenir les actions importantes", I: "Je veux garder les actions qui changent la suite de l’histoire.", P: "Je revois dans ma tête la scène qui vient de se terminer.", M: "Je range cette scène dans une case du schéma narratif." },
+      { m: "Retenir les personnages principaux", I: "Je veux savoir qui fait les actions importantes.", P: "Je revois dans ma tête les actions de mon schéma narratif.", M: "Je me dis le nom du personnage qui fait chaque action." },
+      { m: "Raconter le film", I: "Je veux raconter le film pour qu’on le comprenne.", P: "Je revois dans ma tête mon schéma narratif rempli.", M: "Je raconte en suivant les cases du schéma, une par une." },
+    ],
+    notes: [
+      ["Expert ou débutant", "Le PIM d’expert tient en une ligne : il suffit à quelqu’un qui sait déjà raconter. Pour un débutant, on le décompose en plusieurs PIM simples."],
+      ["Renversement lié à l’expertise", "Quand l’apprenant progresse, on regroupe des minimoi : l’aide utile au débutant deviendrait gênante."],
+      ["Connaissance réactivée", "Le schéma narratif est l’outil qui organise le récit ; il est noté à part, dans la trame."],
+      ["Phases", "Mémoriser pendant le film, puis restituer : le dernier minimoi est le maximoi lui-même, enfin réalisable."],
+    ],
+    ask: "Pour quel apprenant le PIM d’expert suffit-il, et pour lequel faut-il les cinq PIM ?" },
+];
+
+/* ---------- Niveau 2 : minimoi à remettre dans l’ordre (même rang = interchangeables) ---------- */
+const ORDER_TASKS = [
+  { id: "graphique", title: "Comprendre un graphique", niveau: "CM2", source: "D’après « Comprendre un graphique » (C. Bootz, R. Samier & S. Jacques)",
+    maximoi: "Mon objectif est de comprendre ce que raconte un graphique.",
+    items: [[1, "Je repère le titre du graphique."], [2, "J’identifie les informations de l’axe horizontal."], [2, "J’identifie les informations de l’axe vertical."], [3, "Je me raconte le lien entre les deux axes pour chaque point."], [4, "Je regarde si la courbe monte, descend ou reste horizontale."], [5, "Je compare ce que raconte le graphique avec mes connaissances."]],
+    expl: "On part du général (le titre) vers le détail (les axes, puis les points), avant d’interpréter. Les deux axes peuvent être lus dans un ordre ou dans l’autre. La comparaison avec ses connaissances vient en dernier : c’est un contrôle." },
+  { id: "probleme", title: "Résoudre un problème", niveau: "CE2", source: "D’après « Résoudre un problème mathématique » (L. Bossard)",
+    maximoi: "Mon objectif est de trouver la bonne réponse au problème.",
+    items: [[1, "Je lis l’énoncé et je me fais une image mentale de la situation."], [2, "Je reconnais la structure du problème."], [3, "Je complète le schéma : ce que je sais, ce que je cherche."], [4, "Je déduis l’opération du schéma."], [5, "Je pose l’opération et je calcule."], [6, "Je vérifie que mon résultat est possible dans la réalité."], [7, "J’écris une phrase réponse avec l’unité."]],
+    expl: "Comprendre avant de calculer : sans image mentale de la situation, le choix de l’opération se fait au hasard. La vérification vient avant la phrase réponse, pour ne pas écrire une réponse impossible." },
+  { id: "fiche", title: "Faire une fiche de lecture", niveau: "Collège", source: "D’après « Faire une fiche de lecture » (R. Samier, S. Jacques & E. Debomy)",
+    maximoi: "Mon objectif est de réaliser la fiche de lecture complète d’un livre.",
+    items: [[1, "Je note le titre et l’auteur du livre."], [2, "Je cherche le genre littéraire sur la quatrième de couverture."], [3, "Je lis un chapitre à la fois."], [4, "Je repère le lieu et le moment du chapitre."], [4, "Je repère les personnages et les actions principales du chapitre."], [5, "J’organise mes notes en schéma narratif."], [6, "J’écris le résumé de l’histoire."]],
+    expl: "Trois phases : présenter le livre (couverture), collecter les informations chapitre par chapitre, puis organiser et rédiger. Le lieu, le moment, les personnages et les actions peuvent se repérer dans l’ordre qu’on veut ; le schéma narratif ne peut venir qu’après." },
+  { id: "devoirs", title: "Faire mes devoirs en autonomie", niveau: "CM1-CM2", source: "D’après « Faire mes devoirs en autonomie » (M. Laborde, R. Samier & S. Jacques)",
+    maximoi: "Mon objectif est de faire tous mes devoirs seul.",
+    items: [[1, "Je prends mon cartable."], [2, "Je m’installe à mon bureau."], [3, "J’ouvre mon agenda à la date du prochain jour d’école."], [4, "Je choisis un exercice dans la liste."], [5, "Je sors le cahier de la matière de l’exercice."], [6, "Je relis la leçon."], [7, "Je fais l’exercice."], [8, "Je coche l’exercice fait dans l’agenda."]],
+    expl: "La décomposition contient une boucle : après avoir coché, je reviens à « Je choisis un exercice » tant qu’il en reste. Relire la leçon avant l’exercice réactive la connaissance utile. Le document d’origine plaçait la lecture des devoirs avant l’ouverture de l’agenda ; ici, ouvrir l’agenda et lire la liste forment une seule étape." },
+];
+
+/* ---------- Niveau 3 : PIM erronés (fabriqués pour l’exercice) ---------- */
+const DIAG = [
+  { id: "T1", label: "Piège 1 · Décrire le jeu au lieu de la tête" },
+  { id: "T2", label: "Piège 2 · M contient plusieurs actions" },
+  { id: "T3", label: "Piège 3 · Action placée dans la Perception" },
+  { id: "T4", label: "Piège 4 · M ne sert pas l’intention" },
+  { id: "T5", label: "Piège 5 · Parler en professionnel" },
+  { id: "Q1", label: "Grille Q1 · Intention sans « Je veux » + but" },
+  { id: "Q4", label: "Grille Q4 · I, P et M se répètent" },
+  { id: "V", label: "Trop vague : rien de précis à percevoir ou à faire" },
+];
+
+const ERRORS = [
+  { task: "Jeu des Sardines", niveau: "6-8 ans", minimoi: "Garder les sardines dans ma tête",
+    pim: { I: "Je veux garder les sardines de la boîte dans ma tête.", P: "Je regarde le détail qui se voit le plus sur chaque sardine.", M: "Créer une boucle phonologique pour répéter mentalement le détail saillant de chaque sardine." },
+    ans: ["T5"], expl: "Le Mode d’action est juste sur le fond, mais écrit pour l’adulte : « boucle phonologique », « saillant », et un infinitif au lieu de « je ».",
+    fix: { M: "Je me redis avec ma petite voix le détail de chaque sardine." } },
+  { task: "Jeu des Sardines", niveau: "6-8 ans", minimoi: "Mémoriser les sardines",
+    pim: { I: "Je veux mémoriser les sardines de la boîte.", P: "Je regarde la carte boîte.", M: "Je retourne la carte côté face." },
+    ans: ["T4"], expl: "Retourner la carte est un geste de jeu : l’enfant peut le faire parfaitement sans rien mémoriser. Le Mode d’action doit dire ce que fait la tête.",
+    fix: { M: "Je me redis dans ma tête un mot pour chaque sardine (« smoking », « bonnet »…)." } },
+  { task: "Faire des cookies", niveau: "Dès 6 ans", minimoi: "Surveiller la cuisson",
+    pim: { I: "Je veux surveiller la cuisson.", P: "Je règle le minuteur sur 10 minutes.", M: "Je regarde la couleur des cookies." },
+    ans: ["T3", "T4"], expl: "Perception et Mode d’action sont inversés : régler le minuteur est une action, regarder la couleur est une perception. Résultat : le M (« je regarde ») ne permet pas, à lui seul, d’éviter que les cookies brûlent. L’intention gagne aussi à dire le but (dorés, pas brûlés).",
+    fix: { I: "Je veux sortir les cookies quand ils sont dorés, pas brûlés.", P: "Je regarde la couleur du bord des cookies.", M: "Je sors la plaque dès que les bords sont dorés." } },
+  { task: "Lancer une boulette dans la corbeille", niveau: "Lycée", minimoi: "Réussir le lancer",
+    pim: { I: "Mettre le panier.", P: "La corbeille.", M: "Lancer la boulette." },
+    ans: ["V", "Q1", "T5"], expl: "C’est l’exemple de Lachaux : ce PIM décrit la tâche sans aider à la réussir. Il ne dit ni quoi percevoir précisément ni comment agir. Il n’y a ni « Je veux » ni « je ».",
+    fix: { I: "Je veux que ma boulette suive la courbe que j’imagine, à la bonne vitesse.", P: "Je revois dans ma tête la courbe qui va de ma main au bord opposé de la corbeille.", M: "Je commence mon geste en suivant le début de cette courbe." } },
+  { task: "Lire à voix haute", niveau: "CE1", minimoi: "Faire une petite pause à la virgule",
+    pim: { I: "Je veux respecter la ponctuation.", P: "Je vois une virgule et je m’arrête un court instant.", M: "Je fais une petite pause." },
+    ans: ["T3", "Q4"], expl: "La Perception contient déjà l’action (« je m’arrête ») ; le Mode d’action la répète. Chaque élément doit apporter une information nouvelle.",
+    fix: { P: "Je regarde les signes de ponctuation un peu en avance sur ma lecture.", M: "Je fais une petite pause à chaque virgule." } },
+  { task: "Raconter un film", niveau: "Collège", minimoi: "Retenir les personnages principaux",
+    pim: { I: "Je veux identifier les personnages principaux.", P: "J’identifie les personnages principaux du film.", M: "J’identifie les personnages." },
+    ans: ["Q4", "T3"], expl: "Les trois éléments disent la même chose, et la Perception est une action (« j’identifie »). Le PIM ne donne aucun moyen de trouver les personnages.",
+    fix: { P: "Je revois dans ma tête les actions importantes du film.", M: "Je me dis le nom du personnage qui fait chaque action." } },
+  { task: "La dictée", niveau: "CM2", minimoi: "Accorder le groupe nominal",
+    pim: { I: "Je respecte les règles d’accord dans le groupe nominal.", P: "Je recherche le groupe de mots qui contient un nom.", M: "Je détermine le genre et le nombre du nom, puis j’accorde le déterminant, le nom et les adjectifs." },
+    ans: ["Q1", "T3", "T2"], expl: "L’intention est une règle, pas un « Je veux ». « Rechercher » est une action. Le Mode d’action enchaîne deux actions : décider du genre et du nombre, puis accorder chaque mot. On en fait deux PIM.",
+    fix: { I: "Je veux savoir comment accorder le groupe nominal.", P: "Je regarde le nom et les petits mots qui l’accompagnent.", M: "Je me demande : masculin ou féminin ? un ou plusieurs ?", extra: "PIM suivant — I : Je veux que tous les mots du groupe portent les mêmes marques. P : Je regarde la fin de chaque mot du groupe. M : J’ajoute les marques qui manquent." } },
+  { task: "Jeu des Sardines", niveau: "6-8 ans", minimoi: "Liste des minimoi proposée",
+    list: ["Distribuer 5 cartes par joueur face cachée", "Mélanger la pioche", "Retourner la carte boîte", "Mémoriser les sardines", "Compter les points", "Désigner le vainqueur"],
+    ans: ["T1"], expl: "Quatre minimoi sur six décrivent la partie ; la mémorisation, là où l’enfant échoue, tient en une seule étape. Il manque aussi la vérification avant que la boîte soit cachée et la prudence au moment de poser.",
+    fixList: ["Je prépare la manche", "Je regarde chaque sardine de la boîte", "Je garde les sardines dans ma tête", "Je vérifie avant que la boîte soit cachée", "Je pose seulement les sardines que j’ai vues (dans le doute, je garde ma carte)", "J’efface l’ancienne boîte avant la manche suivante"] },
+];
+
+/* ---------- Niveau 4 : PIM à compléter (estompage) ---------- */
+const COMPLETE = [
+  { stage: "A", hide: ["M"], task: "Lire pour comprendre", niveau: "CE2", maximoi: "Mon objectif est de comprendre le texte que je lis.", minimoi: "Me faire un film dans ma tête",
+    model: { I: "Je veux comprendre ce que je lis.", P: "Je lis les mots de la phrase.", M: "Je transforme chaque phrase lue en image dans ma tête." } },
+  { stage: "A", hide: ["M"], task: "Identifier un verbe conjugué", niveau: "Cycle 3", maximoi: "Mon objectif est de trouver le verbe conjugué de la phrase.", minimoi: "Utiliser « ne… pas »",
+    model: { I: "Je veux trouver le verbe conjugué.", P: "Je lis la phrase et je l’imagine dans ma tête.", M: "Je redis la phrase au contraire avec « ne… pas » : le verbe est entre les deux." } },
+  { stage: "A", hide: ["M"], task: "Jouer à la balle", niveau: "3 ans", maximoi: "Mon objectif est de lancer la balle à l’autre joueur.", minimoi: "Garder la balle entre mes mains",
+    model: { I: "Je veux garder la balle dans mes mains sans qu’elle tombe.", P: "Je sens le poids de la balle dans mes mains.", M: "Je serre mes mains de chaque côté de la balle." } },
+  { stage: "B", hide: ["P", "M"], task: "Découper sur la ligne", niveau: "6 ans", maximoi: "Mon objectif est de découper la forme sans sortir de la ligne.", minimoi: "Découper en suivant la ligne",
+    model: { I: "Je veux découper en suivant la ligne.", P: "Je regarde la ligne juste devant la pointe des ciseaux.", M: "J’ouvre et je ferme les ciseaux en avançant doucement sur la ligne." } },
+  { stage: "B", hide: ["P", "M"], task: "Se mettre au calme", niveau: "Fin de maternelle et primaire", maximoi: "Mon objectif est d’être calme avant de commencer l’exercice.", minimoi: "Me calmer avec ma respiration",
+    model: { I: "Je veux me calmer avant l’exercice.", P: "Je sens mon ventre qui se gonfle et se dégonfle.", M: "Je souffle lentement, plus longtemps que j’inspire." } },
+  { stage: "B", hide: ["P", "M"], task: "Faire un achat en autonomie", niveau: "Adolescents (TSA, déficience intellectuelle légère)", maximoi: "Mon objectif est d’acheter une pâtisserie seul à la boulangerie.", minimoi: "Faire ma demande à la boulangère",
+    model: { I: "Je veux demander ma pâtisserie quand c’est mon tour.", P: "J’écoute la boulangère dire « Au suivant ! ».", M: "Je dis la phrase de mon scénario : « Bonjour, je voudrais… s’il vous plaît »." } },
+  { stage: "C", hide: ["I", "P", "M"], task: "Faire une fiche de lecture", niveau: "Collège", maximoi: "Mon objectif est de réaliser la fiche de lecture d’un livre.", minimoi: "Repérer le lieu du chapitre",
+    model: { I: "Je veux savoir où se passe le chapitre.", P: "Je revois dans ma tête les images du chapitre que je viens de lire.", M: "Je note sur ma fiche le nom du lieu que je revois." } },
+  { stage: "C", hide: ["I", "P", "M"], task: "Résoudre un problème", niveau: "CE2", maximoi: "Mon objectif est de trouver la bonne réponse au problème.", minimoi: "Vérifier que mon résultat est possible",
+    model: { I: "Je veux savoir si mon résultat est possible.", P: "Je revois dans ma tête la situation du problème.", M: "Je compare mon résultat avec ce qui peut se passer dans la vraie vie." } },
+  { stage: "C", hide: ["I", "P", "M"], task: "Relire sa dictée", niveau: "CE1", maximoi: "Mon objectif est d’avoir le moins d’erreurs possible dans ma dictée.", minimoi: "Vérifier les mots appris",
+    model: { I: "Je veux écrire sans erreur les mots que j’ai appris.", P: "Je regarde chaque mot de ma dictée qui était dans ma liste.", M: "Je compare ce mot avec la photo du mot dans ma tête." } },
+];
+
+const STAGES = { A: "Étape A · Trouver le Mode d’action", B: "Étape B · Trouver la Perception et le Mode d’action", C: "Étape C · Écrire le PIM complet" };
+
+const TASK_IDEAS = ["Recopier un texte écrit au tableau", "Apprendre une leçon", "Mémoriser une poésie", "Préparer son cartable", "Faire une dictée de syllabes", "Comprendre un énoncé de problème", "Rédiger la fin d’une histoire", "Une tâche de ma pratique"];
+
+/* ================= Application ================= */
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+const _h = htm.bind(React.createElement);
+const html = (str, ...v) => { const r = _h(str, ...v); return Array.isArray(r) ? React.createElement(React.Fragment, null, ...r) : r; };
+
+/* ---------- Stockage local (confort, peut être absent) ---------- */
+const KEY = "atole-pim-entrainement-v1";
+const store = {
+  load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+  save(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} },
+};
+function usePersist(name, init) {
+  const [v, setV] = useState(() => { const s = store.load(); return s[name] !== undefined ? s[name] : init; });
+  useEffect(() => { const s = store.load(); s[name] = v; store.save(s); }, [name, v]);
+  return [v, setV];
+}
+
+/* ---------- Repères automatiques (indicatifs) ---------- */
+const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, "'").replace(/\s+/g, " ").trim();
+const JARGON = ["boucle phonologique", "memoire de travail", "trace mnesique", "mnesique", "inhiber", "inhibition", "encoder", "encodage", "fonctions executives", "flexibilite mentale", "discriminer", "attention selective", "attention soutenue", "calepin", "saillant", "metacognit", "planification", "memoire a court terme", "memoire episodique", "memoire semantique"];
+const P_ACTION = /\b(recherche|rechercher|cherche|chercher|compare|comparer|associe|associer|selectionne|selectionner|identifie|identifier|analyse|analyser|trie|trier|memorise|memoriser|retiens|retenir|determine|determiner|choisis|choisir|decide|decider|ecris|ecrire|note|noter|pose|poser|m'arrete|je fais|faire)\b/;
+const P_PERCEPT = /\b(regarde|regarder|ecoute|ecouter|sens|sentir|ressens|revois|revoir|reentends|entends|vois|voir|touche|lis|lire|observe|imagine|repense|petite voix|dans ma tete)\b/;
+const STOP = new Set("les des une un le la de du je j' mon ma mes ce cette ces et ou a au aux en dans pour que qui sur avec est sont veux chaque tout tous plus".split(" "));
+const words = (s) => norm(s).replace(/[^a-z' ]/g, " ").split(" ").filter((w) => w.length > 3 && !STOP.has(w));
+const overlap = (a, b) => { const A = new Set(words(a)), B = new Set(words(b)); if (A.size < 2 || B.size < 2) return 0; let n = 0; A.forEach((w) => B.has(w) && n++); return n / Math.min(A.size, B.size); };
+const firstPerson = (s) => /\b(je|j'|mon|ma|mes|me|m')/.test(norm(s));
+
+function lintPIM(p) {
+  const out = [];
+  const I = p.I || "", P = p.P || "", M = p.M || "";
+  if (I.trim() && !/^je veux\b/.test(norm(I))) out.push({ k: "Q1", t: "L’intention commence-t-elle par « Je veux » suivi d’un but ?" });
+  if (P.trim()) {
+    const np = norm(P);
+    if (P_ACTION.test(np)) out.push({ k: "T3", t: "La perception contient peut-être une action (rechercher, comparer, identifier…). Dis plutôt sur quoi poser l’attention." });
+    else if (!P_PERCEPT.test(np)) out.push({ k: "Q2", t: "La perception nomme-t-elle une cible : je regarde, j’écoute, je sens, je revois dans ma tête… ?" });
+  }
+  if (M.trim()) {
+    const nm = norm(M);
+    const je = (nm.match(/\b(je|j')/g) || []).length;
+    const cond = /^si\b|\bsi (je|j'|oui|non)/.test(nm);
+    if (/\b(puis|ensuite)\b|;|\n|•/.test(nm) || (je >= 2 && !cond) || (/ et (je|j')/.test(nm) && !cond)) out.push({ k: "T2", t: "Le mode d’action contient peut-être plusieurs actions (« et », « puis », plusieurs « je »). Une condition « si…, je… » reste acceptable." });
+    if (M.length > 150) out.push({ k: "T2", t: "Le mode d’action est long : une seule action tient en général en une phrase courte." });
+  }
+  const all = norm(I + " " + P + " " + M);
+  const jar = JARGON.filter((j) => all.includes(j));
+  if (jar.length) out.push({ k: "T5", t: "Mots de professionnel repérés : " + jar.join(", ") + ". Écris avec les mots de l’apprenant." });
+  ["I", "P", "M"].forEach((x) => { if (p[x] && p[x].trim() && !firstPerson(p[x])) out.push({ k: "T5", t: (x === "I" ? "L’intention" : x === "P" ? "La perception" : "Le mode d’action") + " n’est pas écrit avec « je »." }); });
+  if (overlap(I, P) > 0.75 || overlap(P, M) > 0.75 || overlap(I, M) > 0.75) out.push({ k: "Q4", t: "Deux éléments se ressemblent beaucoup : chacun doit apporter une information nouvelle." });
+  return out;
+}
+function lintMaximoi(s) {
+  const n = norm(s).replace(/^mon objectif est (de |d')/, "");
+  if (!n) return [];
+  if (/^(jouer|faire le jeu|faire l'exercice|faire mes|travailler|etre concentre|me concentrer)/.test(n)) return [{ k: "Max", t: "Le maximoi décrit-il un but de réussite (ce qui sera réussi) plutôt qu’une activité ou un état ?" }];
+  return [];
+}
+
+/* ---------- Prompt de feed-back pour une IA ---------- */
+function rulesBlock() {
+  return [
+    "## Les règles de la décomposition (programme ATOLE)",
+    "- " + RULES.maximoi,
+    "- " + RULES.minimoi,
+    "- PIM = Perception, Intention, Mode d’action (ou Manière d’agir). Un PIM est un mode d’emploi pour se concentrer sur une étape où l’apprenant risque d’échouer.",
+    "- Intention (I) : " + RULES.I,
+    "- Perception (P) : " + RULES.P + " Elle peut être externe (ce que d’autres peuvent percevoir) ou interne (image mentale, petite voix).",
+    "- Mode d’action (M) : " + RULES.M,
+    "- " + RULES.langue,
+    "- Le niveau de découpage est bon quand on voit sans hésiter comment réaliser chaque étape ; il dépend du niveau visé (on regroupe les étapes automatisées, on détaille celles qui posent problème).",
+    "",
+    "## Les 5 pièges fréquents",
+    ...TRAPS.map((t) => `${t.n}. ${t.t} — ${t.why} Repère : ${t.test}`),
+    "",
+    "## La grille des 5 questions pour tester un PIM",
+    ...GRID.map((g, i) => `${i + 1}. ${g}`),
+  ].join("\n");
+}
+function buildPrompt({ exercice, tache, niveau, production }) {
+  return [
+    "Tu es un formateur expert du programme ATOLE (Jean-Philippe Lachaux, INSERM) et de la décomposition des tâches complexes en maximoi, minimoi et PIM. Tu connais aussi la théorie de la charge cognitive.",
+    "Je suis en formation et je m’entraîne à la compétence « Décomposer une tâche complexe avec maximoi, minimoi et PIM ». Les PIM que j’écris sont destinés à un apprenant (enfant, adolescent ou adulte) : il les lira et se les redira pendant la tâche.",
+    "",
+    "## Contexte de l’exercice",
+    "Exercice : " + exercice,
+    "Tâche à décomposer : " + (tache || "(non précisée)"),
+    "Niveau visé ou profil de l’apprenant : " + (niveau || "(non précisé)"),
+    "",
+    rulesBlock(),
+    "",
+    "## Ma production",
+    production,
+    "",
+    "## Ce que j’attends de toi",
+    "1. Commence par 2 ou 3 points forts précis de ma production.",
+    "2. Vérifie le maximoi et le découpage en minimoi (si ma production en contient) : but de réussite, ordre, étapes manquantes (notamment une étape de vérification), étapes sans enjeu attentionnel, niveau de détail adapté au niveau visé.",
+    "3. Passe chaque PIM à la grille des 5 questions : réponds par oui ou non à chaque question, en citant le passage concerné.",
+    "4. Signale les pièges présents (numéro du piège et citation exacte de ma production).",
+    "5. Pour chaque problème, donne une piste concrète et un exemple de reformulation.",
+    "6. Propose ensuite une version corrigée complète, en gardant au maximum mes idées et ma formulation, écrite avec « je », dans les mots de l’apprenant.",
+    "7. Termine par un seul conseil prioritaire pour ma prochaine décomposition.",
+    "Ton : bienveillant, précis et concret. N’ajoute pas de règle qui ne vient pas du programme ATOLE. Si une de mes idées est valable mais différente de ce que tu aurais proposé, dis-le.",
+  ].join("\n");
+}
+const fmtPIM = (p) => `Intention : ${p.I || "…"}\nPerception : ${p.P || "…"}\nMode d’action : ${p.M || "…"}`;
+
+/* ---------- Icônes (traits fins, façon Breeze) ---------- */
+const PATHS = {
+  accueil: "M3 9.5 10 4l7 5.5M5 8.5V16h4v-4h2v4h4V8.5",
+  comprendre: "M4 4h5a2 2 0 0 1 2 2v10a2 2 0 0 0-2-2H4zM16 4h-5a2 2 0 0 0-2 2v10a2 2 0 0 1 2-2h5z",
+  glossaire: "M5 4h10v12H5zM8 8h4M8 11h4",
+  quiz: "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM8 8a2 2 0 1 1 2.8 1.8c-.5.3-.8.6-.8 1.2v.5M10 13.5v.5",
+  pieges: "M10 3 2.5 16h15zM10 8v4M10 14v.5",
+  check: "M4 10.5 8 14l8-8",
+  copy: "M7 7h9v9H7zM4 13V4h9",
+  up: "M10 15V5M5.5 9.5 10 5l4.5 4.5",
+  down: "M10 5v10M5.5 10.5 10 15l4.5-4.5",
+  plus: "M10 4v12M4 10h12",
+  trash: "M5 6h10M8 6V4h4v2M6.5 6l.7 10h5.6l.7-10",
+  prev: "M12 5 7 10l5 5",
+  next: "M8 5l5 5-5 5",
+  info: "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM10 9v5M10 6.5v.5",
+  warn: "M10 3 2.5 16h15zM10 8v4M10 14v.5",
+  good: "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM6.8 10.2l2.2 2.2 4.2-4.4",
+  bad: "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM7.5 7.5l5 5M12.5 7.5l-5 5",
+  eye: "M2.5 10S5.5 4.5 10 4.5 17.5 10 17.5 10 14.5 15.5 10 15.5 2.5 10 2.5 10zM10 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  reset: "M4.5 9A5.5 5.5 0 1 1 6 13.6M4.5 4.5V9H9",
+};
+function Icon({ name, size = 18 }) {
+  return html`<svg width=${size} height=${size} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d=${PATHS[name] || ""} /></svg>`;
+}
+function Num({ n, done }) { return html`<span className=${"num" + (done ? " done" : "")} aria-hidden="true">${done ? html`<${Icon} name="check" size=${13} />` : n}</span>`; }
+
+/* ---------- Briques d’interface ---------- */
+function Msg({ kind = "info", children }) {
+  const ic = kind === "good" ? "good" : kind === "warn" ? "warn" : kind === "bad" ? "bad" : "info";
+  return html`<div className=${"msg " + kind} role=${kind === "info" ? undefined : "status"}><${Icon} name=${ic} /><div>${children}</div></div>`;
+}
+function Frame({ title, hint, children, className = "" }) {
+  return html`<section className=${"frame " + className}>
+    ${title ? html`<div className="frame-head"><h2>${title}</h2>${hint ? html`<span className="hint">${hint}</span>` : null}</div>` : null}
+    <div className="frame-body">${children}</div></section>`;
+}
+function Tabs({ items, value, onChange, label }) {
+  return html`<div className="tabs" role="tablist" aria-label=${label}>
+    ${items.map((it) => html`<button key=${it.id} role="tab" aria-selected=${it.id === value} className="tab" onClick=${() => onChange(it.id)}>${it.done ? html`<${Icon} name="check" size=${14} />` : null}${it.label}</button>`)}
+  </div>`;
+}
+function PimView({ p, hide = [], tag }) {
+  const row = (k, lab) => html`<div className=${"pim-row k" + k}><span className="pim-lab">${lab}</span><span className="pim-txt">${hide.includes(k) ? html`<span className="blank">à compléter</span>` : p[k]}</span></div>`;
+  return html`<div className="pim">${tag ? html`<div className="pim-tag">${tag}</div>` : null}${row("I", "Intention")}${row("P", "Perception")}${row("M", "Mode d’action")}</div>`;
+}
+function LintList({ items }) {
+  if (!items.length) return null;
+  return html`<ul className="lint" aria-label="Repères automatiques">${items.map((x, i) => html`<li key=${i}><span className="chip warn">${x.k.startsWith("T") ? "Piège " + x.k.slice(1) : x.k.startsWith("Q") ? "Question " + x.k.slice(1) : "Maximoi"}</span>${x.t}</li>`)}</ul>`;
+}
+function CopyPrompt({ build, label = "Copier le prompt de feed-back", onCopied }) {
+  const [state, setState] = useState(null);
+  const [show, setShow] = useState(false);
+  const taRef = useRef(null);
+  const text = show || state ? build() : "";
+  const copy = async () => {
+    const t = build();
+    try { await navigator.clipboard.writeText(t); setState("ok"); onCopied && onCopied(); }
+    catch (e) { setShow(true); setState("manual"); setTimeout(() => { if (taRef.current) { taRef.current.focus(); taRef.current.select(); } }, 50); }
+  };
+  return html`<div className="copybox">
+    <div className="copy-head">
+      <div><strong>Obtenir un retour détaillé</strong><p className="muted small">Le prompt réunit le contexte, la tâche, les règles des PIM, les 5 pièges, la grille des 5 questions et votre production. Collez-le dans l’IA générative de votre choix.</p></div>
+      <div className="row">
+        <button className="btn primary" onClick=${copy}><${Icon} name="copy" />${label}</button>
+        <button className="btn" onClick=${() => setShow(!show)} aria-expanded=${show}><${Icon} name="eye" />${show ? "Masquer" : "Voir"} le prompt</button>
+      </div>
+    </div>
+    ${state === "ok" ? html`<${Msg} kind="good">Prompt copié. Collez-le dans une conversation avec l’IA de votre choix.<//>` : null}
+    ${state === "manual" ? html`<${Msg} kind="warn">La copie automatique n’est pas disponible ici : le texte est sélectionné ci-dessous, copiez-le avec Ctrl+C (ou ⌘+C).<//>` : null}
+    ${show ? html`<textarea ref=${taRef} className="prompt" readOnly value=${text} aria-label="Prompt de feed-back"></textarea>` : null}
+  </div>`;
+}
+function Field({ label, value, onChange, rows = 2, placeholder, k }) {
+  return html`<label className=${"field" + (k ? " k" + k : "")}><span className="field-lab">${label}</span>
+    <textarea rows=${rows} value=${value} placeholder=${placeholder || ""} onChange=${(e) => onChange(e.target.value)}></textarea></label>`;
+}
+const shuffle = (arr, seed) => { const a = arr.slice(); let s = seed; for (let i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor((s / 233280) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ================= Pages ================= */
+function Accueil({ go, prog }) {
+  const steps = [
+    ["comprendre", "Comprendre", "Les notions en 7 fiches courtes"],
+    ["glossaire", "Glossaire", "Les mots utiles, avec un exemple"],
+    ["quiz", "Quiz", "Vérifier le vocabulaire et les concepts"],
+    ["pieges", "Pièges et grille", "Les outils pour tester un PIM"],
+  ];
+  const levels = [
+    ["niveau-1", "Exemples résolus", "Étudier 4 décompositions commentées"],
+    ["niveau-2", "Remettre dans l’ordre", "Ordonner les minimoi de 4 tâches"],
+    ["niveau-3", "Corriger des PIM", "Diagnostiquer et réécrire 8 PIM erronés"],
+    ["niveau-4", "Compléter des PIM", "Écrire M, puis P et M, puis I, P et M"],
+    ["niveau-5", "Trame vide", "Décomposer seul une tâche complète"],
+  ];
+  return html`
+    <${Msg}><strong>Compétence visée :</strong> décomposer une tâche complexe avec un maximoi, des minimoi et des PIM, pour qu’un apprenant sache exactement sur quoi porter son attention et quoi faire, une étape à la fois.<//>
+    <div className="two">
+      <${Frame} title="1. Apprendre" hint="Pré-entraînement">
+        <ol className="steplist">${steps.map(([id, t, s]) => html`<li key=${id}><button className="linkrow" onClick=${() => go(id)}><span className="lr-t">${t}</span><span className="lr-s">${s}</span></button></li>`)}</ol>
+      <//>
+      <${Frame} title="2. S’entraîner" hint="L’aide diminue à chaque niveau">
+        <ol className="steplist">${levels.map(([id, t, s], i) => html`<li key=${id}><button className="linkrow" onClick=${() => go(id)}><${Num} n=${i + 1} done=${prog[id]} /><span><span className="lr-t">${t}</span><span className="lr-s">${s}</span></span></button></li>`)}</ol>
+      <//>
+    </div>
+    <${Frame} title="Pourquoi ce parcours ?">
+      <div className="cols3">
+        <div><h3>Une chose à la fois</h3><p>La mémoire de travail est limitée. Les notions arrivent par petites fiches, et chaque exercice ne demande qu’une compétence nouvelle : c’est ce que fait aussi une bonne décomposition en minimoi.</p></div>
+        <div><h3>Des exemples avant l’effort</h3><p>Pour un débutant, étudier des exemples résolus est plus efficace que chercher seul. L’aide est ensuite retirée peu à peu : ordonner, corriger, compléter, puis produire.</p></div>
+        <div><h3>Un retour sur vos productions</h3><p>À partir du niveau 3, un bouton prépare un prompt complet pour obtenir d’une IA générative un retour argumenté, avec pistes, exemples et correction.</p></div>
+      </div>
+    <//>
+    <p className="muted small">Vos réponses aux niveaux 4 et 5 sont gardées dans ce navigateur uniquement. Rien n’est envoyé.</p>`;
+}
+
+const CARDS = [
+  { t: "Pourquoi décomposer ?", body: () => html`
+    <p>Une distraction n’est une distraction que par rapport à une <strong>intention</strong>. Avoir plusieurs intentions en tête en même temps disperse l’attention : c’est la <strong>surcharge mentale</strong>, source de stress, de fatigue et d’oublis de l’intention (les <strong>OUIN</strong>).</p>
+    <p>Décomposer une tâche complexe, c’est transformer un objectif flou en une suite d’intentions claires, concrètes et à court terme. Chacune tient dans une <strong>bulle de concentration</strong>, à l’intérieur de laquelle le cerveau trie facilement ce qui est utile et ce qui ne l’est pas.</p>
+    <div className="note"><strong>Lien avec la charge cognitive :</strong> la difficulté propre de la tâche (charge intrinsèque) ne disparaît pas, elle est répartie dans le temps. La mémoire de travail n’a plus qu’une étape à traiter à la fois.</div>` },
+  { t: "Maximoi et minimoi", body: () => html`
+    <div className="tree" aria-label="Schéma : un maximoi, plusieurs minimoi, des PIM">
+      <div className="node max">Maximoi<small>je planifie, je ne fais rien</small></div>
+      <div className="branches">${[1, 2, 3, 4].map((i) => html`<div key=${i} className="node mini">minimoi ${i}<small>${i === 2 || i === 4 ? "+ PIM" : "sans PIM"}</small></div>`)}</div>
+    </div>
+    <p>ATOLE fait alterner deux rôles. <strong>Maximoi</strong> planifie : il réfléchit au but et à toutes les étapes, sans rien faire. <strong>Minimoi</strong> exécute : il réalise une étape à la fois, sans réfléchir au plan. Après chaque étape, ou après une interruption, on redevient Maximoi le temps de choisir la mini-mission suivante.</p>
+    <p>Le <strong>maximoi</strong> écrit dans la trame est un but de réussite : « Mon objectif est de… ». Les <strong>minimoi</strong> (mini-missions) sont les étapes qui y mènent.</p>` },
+  { t: "Le bon niveau de découpage", body: () => html`
+    <p>Un découpage trop fin (« sortir les œufs », « sortir le beurre »…) est lassant. Un découpage trop grossier (« préparer un gâteau ») ne dit pas par où commencer. <strong>Le bon niveau est celui où l’on voit sans hésiter comment réaliser chaque étape</strong>, et à peu près combien de temps elle prendra.</p>
+    <p>Ce niveau dépend de l’apprenant : c’est pour cela que la trame commence par le <strong>niveau visé</strong>. On détaille davantage là où il échoue ; on regroupe les étapes déjà automatisées.</p>
+    <div className="note"><strong>Le test du double :</strong> imaginez un double de vous-même qui exécute à la lettre, sans réfléchir, les missions que vous lui confiez. Que lui donneriez-vous à faire ?</div>` },
+  { t: "Le PIM : un mode d’emploi pour se concentrer", body: () => html`
+    <p>Avoir une intention claire ne suffit pas toujours : on regarde au mauvais endroit, on va trop vite. Le PIM précise trois choses, comme on le ferait pour un enfant qui sépare le blanc du jaune d’œuf.</p>
+    <div className="pimdef">
+      <div className="kI"><span className="pim-lab">Intention</span><p>Ce que je veux obtenir. <em>« Je veux garder le jaune entier dans la coquille. »</em></p></div>
+      <div className="kP"><span className="pim-lab">Perception</span><p>La cible de mon attention. <em>« Je regarde le jaune et le bord de la coquille. »</em></p></div>
+      <div className="kM"><span className="pim-lab">Mode d’action</span><p>La seule action que je décide de faire. <em>« Je bouge doucement les deux moitiés de coquille. »</em></p></div>
+    </div>
+    <p>N’importe qui peut décider de regarder le jaune, de vouloir le garder entier et de manipuler la coquille avec soin : le PIM rend la concentration <strong>décidable</strong>.</p>` },
+  { t: "Perceptions et actions mentales", body: () => html`
+    <p>Une perception peut être <strong>externe</strong> (la voix de la maîtresse, la ligne à découper) ou <strong>interne</strong> (une image mentale, la petite voix). Une action peut être physique (verser, découper) ou mentale (se redire, revoir dans sa tête).</p>
+    <p>Beaucoup d’actions mentales sont des <strong>conversions</strong> d’une modalité en une autre : des mots entendus deviennent un film dans ma tête, une image devient un geste.</p>
+    <div className="note"><strong>Exemple de Lachaux :</strong> « P = la corbeille, I = mettre le panier, M = lancer » n’aide personne. Le PIM utile : je revois la courbe que doit suivre la boulette (P), je veux coller à cette courbe à la bonne vitesse (I), je commence mon geste en suivant cette courbe (M). Un PIM doit être précis pour être utile.</div>` },
+  { t: "Un PIM ou plusieurs ?", body: () => html`
+    <p>Un PIM verrouille l’attention sur un élément souvent bref. Une mini-mission peut donc demander <strong>plusieurs PIM qui se suivent</strong>, ou <strong>deux PIM en alternance</strong> : toucher une forme cachée (P tactile → image mentale), puis la dessiner (image mentale → geste).</p>
+    <p>À l’inverse, un PIM est <strong>superflu</strong> quand l’apprenant réussit déjà l’étape « comme d’habitude ». On le réserve aux étapes où il risque d’échouer.</p>
+    <p>Un <strong>PIM d’expert</strong> (« je raconte le film ») suffit à une personne expérimentée. Pour un débutant, on le décompose en PIM simples.</p>` },
+  { t: "Présenter une décomposition sans surcharger", body: () => html`
+    <p>La théorie de la charge cognitive et l’apprentissage multimédia (Sweller, Mayer) donnent des repères pour construire vos documents PIM :</p>
+    <ul className="tight">
+      <li><strong>Segmentation :</strong> une fiche par minimoi, que l’apprenant fait avancer à son rythme.</li>
+      <li><strong>Signalement :</strong> les étiquettes I, P, M toujours au même endroit, dans le même ordre.</li>
+      <li><strong>Cohérence :</strong> pas de décor ni de règle du jeu recopiée dans la fiche PIM.</li>
+      <li><strong>Pré-entraînement :</strong> les mots-outils (petite voix, image mentale) sont appris avant la tâche.</li>
+      <li><strong>Personnalisation :</strong> le PIM est écrit avec « je », dans les mots de l’apprenant.</li>
+      <li><strong>Double codage :</strong> un pictogramme ou un geste peut accompagner le texte d’un PIM, s’il porte le même sens.</li>
+      <li><strong>Estompage et expertise :</strong> on retire les PIM quand les étapes sont automatisées.</li>
+    </ul>` },
+];
+function Comprendre({ markDone }) {
+  const [i, setI] = useState(0);
+  useEffect(() => { if (i === CARDS.length - 1) markDone(); }, [i]);
+  const c = CARDS[i];
+  return html`
+    <div className="dots" role="tablist" aria-label="Fiches">${CARDS.map((x, k) => html`<button key=${k} role="tab" aria-selected=${k === i} className="dot" onClick=${() => setI(k)} title=${x.t}>${k + 1}</button>`)}</div>
+    <${Frame} title=${(i + 1) + ". " + c.t} hint=${"Fiche " + (i + 1) + " sur " + CARDS.length} className="card">${c.body()}<//>
+    <div className="row between">
+      <button className="btn" disabled=${i === 0} onClick=${() => setI(i - 1)}><${Icon} name="prev" />Fiche précédente</button>
+      <button className="btn" disabled=${i === CARDS.length - 1} onClick=${() => setI(i + 1)}>Fiche suivante<${Icon} name="next" /></button>
+    </div>`;
+}
+
+function Glossaire() {
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState("Tous");
+  const cats = ["Tous", "ATOLE", "Charge cognitive", "Multimédia"];
+  const list = GLOSSARY.filter((g) => (cat === "Tous" || g.cat === cat) && (!q || norm(g.term + " " + g.def + " " + g.ex).includes(norm(q))));
+  return html`
+    <div className="row wrap">
+      <input className="search" type="search" placeholder="Rechercher un mot…" value=${q} onInput=${(e) => setQ(e.target.value)} aria-label="Rechercher dans le glossaire" />
+      <${Tabs} label="Catégories" items=${cats.map((c) => ({ id: c, label: c }))} value=${cat} onChange=${setCat} />
+    </div>
+    <p className="muted small">${list.length} mot${list.length > 1 ? "s" : ""} · seulement les mots utiles pour décomposer une tâche.</p>
+    <div className="gloss">${list.map((g) => html`<article key=${g.term} className="frame gl">
+      <div className="gl-head"><h3>${g.term}</h3><span className="chip neutral">${g.cat}</span></div>
+      <p>${g.def}</p><p className="gl-ex"><span className="lbl">Exemple</span>${g.ex}</p></article>`)}</div>`;
+}
+
+function QuizRunner({ quiz, onDone }) {
+  const [i, setI] = useState(0);
+  const [pick, setPick] = useState(null);
+  const [score, setScore] = useState(0);
+  const [end, setEnd] = useState(false);
+  useEffect(() => { setI(0); setPick(null); setScore(0); setEnd(false); }, [quiz.id]);
+  if (end) {
+    const pct = Math.round((score / quiz.qs.length) * 100);
+    return html`<${Frame} title="Résultat">
+      <p className="big">${score} / ${quiz.qs.length}</p>
+      <${Msg} kind=${pct >= 75 ? "good" : "warn"}>${pct >= 75 ? "Bien acquis. Vous pouvez passer à la suite." : "Relisez les fiches « Comprendre » et le glossaire, puis recommencez."}<//>
+      <div className="row"><button className="btn" onClick=${() => { setI(0); setPick(null); setScore(0); setEnd(false); }}><${Icon} name="reset" />Recommencer</button></div>
+    <//>`;
+  }
+  const q = quiz.qs[i];
+  const answer = (k) => { if (pick !== null) return; setPick(k); if (k === q.a) setScore(score + 1); };
+  const next = () => { if (i + 1 < quiz.qs.length) { setI(i + 1); setPick(null); } else { setEnd(true); onDone(quiz.id, score); } };
+  return html`<${Frame} title=${"Question " + (i + 1) + " sur " + quiz.qs.length} hint=${"Score : " + score}>
+    <div className="progress" aria-hidden="true"><span style=${{ width: ((i) / quiz.qs.length) * 100 + "%" }}></span></div>
+    <p className="q">${q.q}</p>
+    <div className="opts">${q.o.map((o, k) => {
+      let cls = "opt";
+      if (pick !== null) { if (k === q.a) cls += " ok"; else if (k === pick) cls += " ko"; }
+      return html`<button key=${k} className=${cls} onClick=${() => answer(k)} disabled=${pick !== null && k !== pick && k !== q.a}>${o}</button>`;
+    })}</div>
+    ${pick !== null ? html`<${Msg} kind=${pick === q.a ? "good" : "bad"}><strong>${pick === q.a ? "Exact. " : "Pas tout à fait. "}</strong>${q.e}<//>
+      <div className="row end"><button className="btn primary" onClick=${next}>${i + 1 < quiz.qs.length ? "Question suivante" : "Voir le résultat"}<${Icon} name="next" /></button></div>` : null}
+  <//>`;
+}
+function Quiz({ scores, setScore }) {
+  const [id, setId] = useState(QUIZZES[0].id);
+  const quiz = QUIZZES.find((x) => x.id === id);
+  return html`
+    <${Tabs} label="Quiz" items=${QUIZZES.map((x) => ({ id: x.id, label: x.title + (scores[x.id] !== undefined ? " · " + scores[x.id] + "/" + x.qs.length : "") }))} value=${id} onChange=${setId} />
+    <p className="muted">${quiz.sub} · ${quiz.qs.length} questions, avec une explication après chaque réponse.</p>
+    <${QuizRunner} quiz=${quiz} onDone=${setScore} />`;
+}
+
+function Pieges() {
+  return html`
+    <${Frame} title="Les 5 questions pour tester un PIM" hint="À garder sous les yeux pendant l’écriture">
+      <ol className="checklist">${GRID.map((g, i) => html`<li key=${i}>${g}</li>`)}</ol>
+    <//>
+    <div className="section-head">Les 5 pièges fréquents</div>
+    <div className="traps">${TRAPS.map((t) => html`<section key=${t.id} className="frame trap">
+      <div className="frame-body">
+        <h3><span className="tnum">${t.n}.</span> ${t.t}</h3>
+        <p className="why">${t.why}</p>
+        <div className="trap-cols"><div><span className="lbl">Exemple</span><blockquote>${t.ex}</blockquote></div><div><span className="lbl">Réécriture</span><p className="fix">${t.fix}</p></div></div>
+        <p className="test"><span className="lbl">Repère</span>${t.test}</p>
+      </div></section>`)}</div>
+    <div className="two">
+      <${Frame} title="Verbes pour la Perception">
+        <div className="chips">${VERBS_P.map((v) => html`<span key=${v} className="chip">${v}</span>`)}</div>
+        <p className="muted small">Pour le Mode d’action : des verbes concrets et observables, ou une action mentale précise (je me redis, je compare, je pointe, je verse jusqu’à…).</p>
+      <//>
+      <${Frame} title="Mot du professionnel → mot de l’apprenant">
+        <table className="tbl"><tbody>${PRO_TO_CHILD.map(([a, b]) => html`<tr key=${a}><td>${a}</td><td>→</td><td><strong>${b}</strong></td></tr>`)}</tbody></table>
+      <//>
+    </div>`;
+}
+
+/* ---------- Niveau 1 ---------- */
+function Niveau1({ markDone }) {
+  const [seen, setSeen] = usePersist("n1seen", []);
+  const [id, setId] = useState(WORKED[0].id);
+  const [open, setOpen] = useState(false);
+  const ex = WORKED.find((w) => w.id === id);
+  useEffect(() => { setOpen(false); }, [id]);
+  const reveal = () => { setOpen(true); const s = Array.from(new Set([...seen, id])); setSeen(s); if (s.length >= WORKED.length) markDone(); };
+  return html`
+    <${Msg}><strong>Consigne :</strong> lisez l’exemple, puis répondez dans votre tête à la question avant d’afficher le commentaire. S’expliquer l’exemple à soi-même est ce qui le rend efficace.<//>
+    <${Tabs} label="Exemples" items=${WORKED.map((w) => ({ id: w.id, label: w.title.split(" :")[0], done: seen.includes(w.id) }))} value=${id} onChange=${setId} />
+    <${Frame} title=${ex.title} hint=${"Niveau visé : " + ex.niveau}>
+      <div className="trame">
+        <div className="maxi"><span className="lbl">Maximoi</span>${ex.maximoi}</div>
+        ${ex.expert ? html`<div className="expert"><span className="lbl">PIM d’expert</span><${PimView} p=${ex.expert} /></div>` : null}
+        <div className="lbl">${ex.expert ? "Décomposition pour un débutant" : "Minimoi et PIM"}</div>
+        <ol className="minis">${ex.steps.map((s, k) => html`<li key=${k}><div className="mini-t"><${Num} n=${k + 1} />${s.m}</div><${PimView} p=${s} /></li>`)}</ol>
+        <div className="conn"><span className="lbl">Connaissance réactivée</span>${ex.connaissance}</div>
+      </div>
+      <p className="muted small src">${ex.source}. Licence CC BY-SA 4.0.</p>
+    <//>
+    <${Frame} title="À vous de réfléchir">
+      <p className="q">${ex.ask}</p>
+      ${open ? html`<div className="notes">${ex.notes.map(([h, t]) => html`<div key=${h} className="note"><strong>${h} :</strong> ${t}</div>`)}</div>`
+        : html`<button className="btn primary" onClick=${reveal}><${Icon} name="eye" />Afficher le commentaire</button>`}
+    <//>`;
+}
+
+/* ---------- Niveau 2 ---------- */
+function OrderTask({ task, onSolved }) {
+  const init = useMemo(() => { let s = shuffle(task.items.map((x, i) => ({ r: x[0], t: x[1], id: i })), task.id.length * 7 + 3); if (s.every((x, k) => k === 0 || s[k - 1].r <= x.r)) s = s.reverse(); return s; }, [task.id]);
+  const [list, setList] = useState(init);
+  const [checked, setChecked] = useState(false);
+  useEffect(() => { setList(init); setChecked(false); }, [task.id]);
+  const move = (k, d) => { const j = k + d; if (j < 0 || j >= list.length) return; const a = list.slice(); [a[k], a[j]] = [a[j], a[k]]; setList(a); setChecked(false); };
+  const sorted = task.items.map((x) => x[0]).sort((a, b) => a - b);
+  const okAt = (k) => list[k].r === sorted[k];
+  const allOk = list.every((_, k) => okAt(k));
+  const check = () => { setChecked(true); if (list.every((_, k) => okAt(k))) onSolved(task.id); };
+  return html`
+    <div className="maxi"><span className="lbl">Maximoi</span>${task.maximoi}</div>
+    <ol className="order">${list.map((x, k) => html`<li key=${x.id} className=${checked ? (okAt(k) ? "ok" : "ko") : ""}>
+      <${Num} n=${k + 1} /><span className="ot">${x.t}</span>
+      <span className="ob"><button className="ibtn" onClick=${() => move(k, -1)} disabled=${k === 0} aria-label=${"Monter : " + x.t}><${Icon} name="up" /></button><button className="ibtn" onClick=${() => move(k, 1)} disabled=${k === list.length - 1} aria-label=${"Descendre : " + x.t}><${Icon} name="down" /></button></span>
+    </li>`)}</ol>
+    <div className="row"><button className="btn primary" onClick=${check}><${Icon} name="check" />Vérifier l’ordre</button>
+      <button className="btn" onClick=${() => { setList(init); setChecked(false); }}><${Icon} name="reset" />Recommencer</button></div>
+    ${checked ? (allOk ? html`<${Msg} kind="good"><strong>Ordre correct.</strong> ${task.expl}<//>` : html`<${Msg} kind="warn">Les étapes en orange ne sont pas encore à leur place. Demandez-vous : de quoi a-t-on besoin pour réaliser cette étape ? Cela doit venir avant.<//>`) : null}
+    <p className="muted small src">${task.source}.</p>`;
+}
+function Niveau2({ markDone }) {
+  const [solved, setSolved] = usePersist("n2", []);
+  const [id, setId] = useState(ORDER_TASKS[0].id);
+  const task = ORDER_TASKS.find((t) => t.id === id);
+  const onSolved = (tid) => { const s = Array.from(new Set([...solved, tid])); setSolved(s); if (s.length >= ORDER_TASKS.length) markDone(); };
+  return html`
+    <${Msg}><strong>Consigne :</strong> remettez les minimoi dans l’ordre avec les flèches. Certaines étapes peuvent s’échanger ; ce qui compte, c’est que chaque étape dispose de ce dont elle a besoin.<//>
+    <${Tabs} label="Tâches" items=${ORDER_TASKS.map((t) => ({ id: t.id, label: t.title, done: solved.includes(t.id) }))} value=${id} onChange=${setId} />
+    <${Frame} title=${task.title} hint=${"Niveau visé : " + task.niveau}><${OrderTask} task=${task} onSolved=${onSolved} /><//>`;
+}
+
+/* ---------- Niveau 3 ---------- */
+function ErrorItem({ it, idx, onChecked }) {
+  const [sel, setSel] = useState([]);
+  const [checked, setChecked] = useState(false);
+  const [txt, setTxt] = useState("");
+  const [show, setShow] = useState(false);
+  useEffect(() => { setSel([]); setChecked(false); setTxt(""); setShow(false); }, [idx]);
+  const toggle = (id) => { setChecked(false); setSel(sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id]); };
+  const good = it.ans.filter((a) => sel.includes(a)), missed = it.ans.filter((a) => !sel.includes(a)), extra = sel.filter((a) => !it.ans.includes(a));
+  const lab = (id) => DIAG.find((d) => d.id === id).label;
+  const fixP = it.fix ? { ...it.pim, ...it.fix } : null;
+  const original = it.list ? "Minimoi proposés :\n" + it.list.map((x, i) => `${i + 1}. ${x}`).join("\n") : `Minimoi : ${it.minimoi}\n${fmtPIM(it.pim)}`;
+  const build = () => buildPrompt({
+    exercice: "Corriger un PIM erroné. On m’a donné un PIM (ou une liste de minimoi) qui contient des erreurs ; j’ai fait un diagnostic puis écrit une correction. Évalue mon diagnostic et ma correction.",
+    tache: it.task, niveau: it.niveau,
+    production: `### Version erronée fournie\n${original}\n\n### Mon diagnostic\n${sel.length ? sel.map(lab).join("\n") : "(aucun)"}\n\n### Ma correction\n${txt || "(pas encore écrite)"}`,
+  });
+  return html`
+    <div className="ctx"><span className="chip neutral">${it.task}</span><span className="chip neutral">${it.niveau}</span><span className="muted small">Minimoi : ${it.minimoi}</span></div>
+    ${it.list ? html`<ol className="plain">${it.list.map((x) => html`<li key=${x}>${x}</li>`)}</ol>` : html`<${PimView} p=${it.pim} />`}
+    <fieldset className="diag"><legend>Quels problèmes repérez-vous ? Plusieurs réponses possibles.</legend>
+      ${DIAG.map((d) => html`<label key=${d.id} className=${"cb" + (checked ? (it.ans.includes(d.id) ? (sel.includes(d.id) ? " ok" : " miss") : (sel.includes(d.id) ? " ko" : "")) : "")}><input type="checkbox" checked=${sel.includes(d.id)} onChange=${() => toggle(d.id)} />${d.label}</label>`)}
+    </fieldset>
+    <div className="row"><button className="btn primary" onClick=${() => { setChecked(true); onChecked(idx); }} disabled=${!sel.length}><${Icon} name="check" />Vérifier mon diagnostic</button></div>
+    ${checked ? html`<${Msg} kind=${!missed.length && !extra.length ? "good" : "warn"}>
+      ${!missed.length && !extra.length ? html`<strong>Diagnostic complet.</strong> ` : html`<strong>${good.length} sur ${it.ans.length} trouvé${good.length > 1 ? "s" : ""}.</strong> ${missed.length ? "À ajouter : " + missed.map(lab).join(" ; ") + ". " : ""}${extra.length ? "En trop : " + extra.map(lab).join(" ; ") + ". " : ""}`}
+      ${it.expl}<//>
+      <${Field} label=${it.list ? "Votre liste de minimoi corrigée" : "Votre PIM corrigé"} rows=${5} value=${txt} onChange=${setTxt} placeholder=${it.list ? "1. …\n2. …" : "Intention : Je veux…\nPerception : Je regarde…\nMode d’action : Je…"} />
+      ${!it.list && txt ? html`<${LintList} items=${lintPIM(parseIPM(txt))} />` : null}
+      <div className="row"><button className="btn" onClick=${() => setShow(!show)} aria-expanded=${show}><${Icon} name="eye" />${show ? "Masquer" : "Voir"} une proposition</button></div>
+      ${show ? (it.list ? html`<div className="note"><strong>Proposition :</strong><ol className="plain">${it.fixList.map((x) => html`<li key=${x}>${x}</li>`)}</ol></div>`
+        : html`<div><span className="lbl">Proposition</span><${PimView} p=${fixP} />${it.fix.extra ? html`<p className="muted small">${it.fix.extra}</p>` : null}</div>`) : null}
+      <${CopyPrompt} build=${build} />` : null}`;
+}
+function parseIPM(t) {
+  const get = (re) => { const m = t.match(re); return m ? m[1].trim() : ""; };
+  const I = get(/intention\s*\(?i?\)?\s*:\s*([^\n]*)/i), P = get(/perception\s*\(?p?\)?\s*:\s*([^\n]*)/i), M = get(/(?:mode d.action|mani[eè]re d.agir)\s*\(?m?\)?\s*:\s*([^\n]*)/i);
+  if (I || P || M) return { I, P, M };
+  return { M: t };
+}
+function Niveau3({ markDone }) {
+  const [done, setDone] = usePersist("n3", []);
+  const [i, setI] = useState(0);
+  const onChecked = (k) => { const s = Array.from(new Set([...done, k])); setDone(s); if (s.length >= ERRORS.length) markDone(); };
+  return html`
+    <${Msg}><strong>Consigne :</strong> chaque PIM a été fabriqué pour l’exercice. Repérez les problèmes à l’aide des 5 pièges et de la grille des 5 questions, puis réécrivez-le. Les premiers ne contiennent qu’une erreur ; les suivants en cumulent plusieurs.<//>
+    <div className="dots" role="tablist" aria-label="PIM à corriger">${ERRORS.map((_, k) => html`<button key=${k} role="tab" aria-selected=${k === i} className=${"dot" + (done.includes(k) ? " done" : "")} onClick=${() => setI(k)}>${k + 1}</button>`)}</div>
+    <${Frame} title=${"PIM " + (i + 1) + " sur " + ERRORS.length} hint=${ERRORS[i].ans.length > 1 ? "Plusieurs problèmes" : "Un problème"}><${ErrorItem} it=${ERRORS[i]} idx=${i} onChecked=${onChecked} /><//>
+    <div className="row between">
+      <button className="btn" disabled=${i === 0} onClick=${() => setI(i - 1)}><${Icon} name="prev" />Précédent</button>
+      <button className="btn" disabled=${i === ERRORS.length - 1} onClick=${() => setI(i + 1)}>Suivant<${Icon} name="next" /></button>
+    </div>`;
+}
+
+/* ---------- Niveau 4 ---------- */
+function CompleteItem({ it, idx, val, setVal, onReveal }) {
+  const [show, setShow] = useState(false);
+  const [grid, setGrid] = useState([]);
+  useEffect(() => { setShow(false); setGrid([]); }, [idx]);
+  const v = val || {};
+  const pim = { I: it.hide.includes("I") ? v.I || "" : it.model.I, P: it.hide.includes("P") ? v.P || "" : it.model.P, M: v.M || "" };
+  const filled = it.hide.every((k) => (v[k] || "").trim());
+  const lab = { I: "Intention", P: "Perception", M: "Mode d’action" };
+  const ph = { I: "Je veux…", P: "Je regarde / j’écoute / je sens / je revois dans ma tête…", M: "Je… (une seule action)" };
+  const build = () => buildPrompt({
+    exercice: "Compléter un PIM. On m’a donné le maximoi, le titre du minimoi et une partie du PIM ; j’ai complété les éléments manquants (" + it.hide.map((k) => lab[k]).join(", ") + "). Les éléments fournis sont corrects ; évalue surtout ce que j’ai écrit.",
+    tache: it.task, niveau: it.niveau,
+    production: `Maximoi : ${it.maximoi}\nMinimoi : ${it.minimoi}\n${fmtPIM(pim)}`,
+  });
+  return html`
+    <div className="ctx"><span className="chip neutral">${it.task}</span><span className="chip neutral">${it.niveau}</span></div>
+    <div className="maxi"><span className="lbl">Maximoi</span>${it.maximoi}</div>
+    <div className="mini-t big2"><span className="lbl">Minimoi</span>${it.minimoi}</div>
+    <div className="pim edit">
+      ${["I", "P", "M"].map((k) => it.hide.includes(k)
+        ? html`<${Field} key=${k} k=${k} label=${lab[k]} value=${v[k] || ""} onChange=${(t) => setVal({ ...v, [k]: t })} placeholder=${ph[k]} />`
+        : html`<div key=${k} className=${"pim-row k" + k}><span className="pim-lab">${lab[k]}</span><span className="pim-txt">${it.model[k]}</span></div>`)}
+    </div>
+    <${LintList} items=${lintPIM(pim)} />
+    ${filled ? html`
+      <fieldset className="diag"><legend>Testez votre PIM avec la grille : cochez quand la réponse est « oui ».</legend>
+        ${GRID.map((g, k) => html`<label key=${k} className="cb"><input type="checkbox" checked=${grid.includes(k)} onChange=${() => setGrid(grid.includes(k) ? grid.filter((x) => x !== k) : [...grid, k])} />${g}</label>`)}
+      </fieldset>
+      ${grid.length === GRID.length ? html`<${Msg} kind="good">Les cinq réponses sont « oui ». Comparez avec une proposition, puis demandez un retour détaillé.<//>` : null}
+      <div className="row"><button className="btn" onClick=${() => { setShow(!show); onReveal(idx); }} aria-expanded=${show}><${Icon} name="eye" />${show ? "Masquer" : "Comparer avec"} une proposition</button></div>
+      ${show ? html`<div><span className="lbl">Une proposition parmi d’autres</span><${PimView} p=${it.model} /><p className="muted small">Votre PIM peut être différent et tout aussi juste : ce qui compte, c’est qu’il passe la grille des 5 questions.</p></div>` : null}
+      <${CopyPrompt} build=${build} />`
+      : html`<p className="muted small">Complétez ${it.hide.length > 1 ? "les champs" : "le champ"} pour tester votre PIM avec la grille.</p>`}`;
+}
+function Niveau4({ markDone }) {
+  const [vals, setVals] = usePersist("n4vals", {});
+  const [done, setDone] = usePersist("n4", []);
+  const [i, setI] = useState(0);
+  const it = COMPLETE[i];
+  const onReveal = (k) => { const s = Array.from(new Set([...done, k])); setDone(s); if (s.length >= COMPLETE.length) markDone(); };
+  return html`
+    <${Msg}><strong>Consigne :</strong> l’aide diminue d’étape en étape. A : vous écrivez le Mode d’action. B : la Perception et le Mode d’action. C : le PIM complet, à partir du seul titre du minimoi.<//>
+    <div className="stages">${["A", "B", "C"].map((s) => html`<div key=${s} className="stage"><span className="lbl">${STAGES[s]}</span>
+      <div className="dots">${COMPLETE.map((c, k) => c.stage === s ? html`<button key=${k} aria-label=${"Exercice " + (k + 1)} aria-current=${k === i ? "true" : undefined} className=${"dot" + (k === i ? " cur" : "") + (done.includes(k) ? " done" : "")} onClick=${() => setI(k)}>${k + 1}</button>` : null)}</div></div>`)}</div>
+    <${Frame} title=${STAGES[it.stage]} hint=${"Exercice " + (i + 1) + " sur " + COMPLETE.length}>
+      <${CompleteItem} it=${it} idx=${i} val=${vals[i]} setVal=${(v) => setVals({ ...vals, [i]: v })} onReveal=${onReveal} />
+    <//>
+    <div className="row between">
+      <button className="btn" disabled=${i === 0} onClick=${() => setI(i - 1)}><${Icon} name="prev" />Précédent</button>
+      <button className="btn" disabled=${i === COMPLETE.length - 1} onClick=${() => setI(i + 1)}>Suivant<${Icon} name="next" /></button>
+    </div>`;
+}
+
+/* ---------- Niveau 5 : trame vide ---------- */
+const EMPTY = { titre: "", niveau: "", objectif: "", maximoi: "", minis: [{ t: "", pim: true, I: "", P: "", M: "" }, { t: "", pim: true, I: "", P: "", M: "" }, { t: "", pim: true, I: "", P: "", M: "" }], connaissance: "" };
+function Niveau5({ markDone }) {
+  const [d, setD] = usePersist("n5", EMPTY);
+  const [confirm, setConfirm] = useState(false);
+  const set = (k, v) => setD({ ...d, [k]: v });
+  const setMini = (i, k, v) => setD({ ...d, minis: d.minis.map((m, j) => (j === i ? { ...m, [k]: v } : m)) });
+  const move = (i, dir) => { const j = i + dir; if (j < 0 || j >= d.minis.length) return; const a = d.minis.slice(); [a[i], a[j]] = [a[j], a[i]]; set("minis", a); };
+  const production = () => {
+    const lines = [`Titre : ${d.titre || "(sans titre)"}`, `Niveau visé : ${d.niveau || "(non précisé)"}`, `Objectif pour l’adulte : ${d.objectif || "(non précisé)"}`, "", `Maximoi : ${d.maximoi || "(vide)"}`, "", "Minimoi :"];
+    d.minis.forEach((m, i) => lines.push(`${i + 1}. ${m.t || "(sans titre)"}${m.pim ? "" : " — pas de PIM (étape déjà réussie)"}`));
+    d.minis.forEach((m, i) => { if (m.pim) lines.push("", `PIM ${i + 1} — ${m.t || "(sans titre)"}`, fmtPIM(m)); });
+    lines.push("", `Connaissance ou procédure réactivée : ${d.connaissance || "(non précisée)"}`);
+    return lines.join("\n");
+  };
+  const build = () => buildPrompt({ exercice: "Décomposer seul une tâche complète à partir d’une trame vide (titre, niveau visé, objectif, maximoi, minimoi, PIM et connaissance réactivée). J’ai indiqué les minimoi qui n’ont pas besoin de PIM.", tache: d.titre, niveau: d.niveau, production: production() });
+  const nbPim = d.minis.filter((m) => m.pim).length;
+  return html`
+    <${Msg}><strong>Consigne :</strong> choisissez une tâche, commencez par le niveau visé, puis devenez Maximoi : but, étapes, et un PIM pour chaque étape où l’apprenant risque d’échouer. Votre trame est gardée dans ce navigateur.<//>
+    <${Frame} title="1. Le cadre" hint="Le niveau visé justifie le niveau de détail">
+      <div className="ideas"><span className="muted small">Idées de tâches :</span>${TASK_IDEAS.map((t) => html`<button key=${t} className="chip btnchip" onClick=${() => set("titre", t === "Une tâche de ma pratique" ? "" : t)}>${t}</button>`)}</div>
+      <div className="grid3">
+        <${Field} label="Titre (la tâche)" rows=${1} value=${d.titre} onChange=${(v) => set("titre", v)} placeholder="Ex. Recopier un texte écrit au tableau" />
+        <${Field} label="Niveau visé, profil" rows=${1} value=${d.niveau} onChange=${(v) => set("niveau", v)} placeholder="Ex. CE2, élève avec un TDL" />
+        <${Field} label="Objectif (pour l’adulte)" rows=${1} value=${d.objectif} onChange=${(v) => set("objectif", v)} placeholder="Ex. Copier sans oubli ni erreur" />
+      </div>
+    <//>
+    <${Frame} title="2. Le maximoi" hint="Un but de réussite, du point de vue de l’apprenant">
+      <${Field} label="Mon objectif est de…" rows=${2} value=${d.maximoi} onChange=${(v) => set("maximoi", v)} placeholder="Mon objectif est de…" />
+      <${LintList} items=${lintMaximoi(d.maximoi)} />
+    <//>
+    <${Frame} title="3. Les minimoi" hint=${d.minis.length + " étapes · " + nbPim + " PIM"}>
+      <ol className="order edit">${d.minis.map((m, i) => html`<li key=${i}>
+        <${Num} n=${i + 1} />
+        <input className="inp" value=${m.t} placeholder="Ex. Je repère le mot à copier" aria-label=${"Minimoi " + (i + 1)} onInput=${(e) => setMini(i, "t", e.target.value)} />
+        <label className="sw"><input type="checkbox" checked=${m.pim} onChange=${(e) => setMini(i, "pim", e.target.checked)} />PIM</label>
+        <span className="ob"><button className="ibtn" onClick=${() => move(i, -1)} disabled=${i === 0} aria-label="Monter"><${Icon} name="up" /></button><button className="ibtn" onClick=${() => move(i, 1)} disabled=${i === d.minis.length - 1} aria-label="Descendre"><${Icon} name="down" /></button><button className="ibtn" onClick=${() => set("minis", d.minis.filter((_, j) => j !== i))} disabled=${d.minis.length <= 1} aria-label="Supprimer"><${Icon} name="trash" /></button></span>
+      </li>`)}</ol>
+      <div className="row"><button className="btn" onClick=${() => set("minis", [...d.minis, { t: "", pim: true, I: "", P: "", M: "" }])}><${Icon} name="plus" />Ajouter un minimoi</button></div>
+      <p className="muted small">Décochez « PIM » pour une étape que l’apprenant réussit déjà sans aide (piège 1). Pensez à une étape de vérification.</p>
+    <//>
+    <div className="section-head">4. Les PIM</div>
+    ${d.minis.map((m, i) => m.pim ? html`<${Frame} key=${i} title=${"PIM " + (i + 1) + " · " + (m.t || "minimoi sans titre")}>
+      <div className="pim edit">
+        <${Field} k="I" label="Intention" value=${m.I} onChange=${(v) => setMini(i, "I", v)} placeholder="Je veux…" />
+        <${Field} k="P" label="Perception" value=${m.P} onChange=${(v) => setMini(i, "P", v)} placeholder="Je regarde / j’écoute / je sens / je revois dans ma tête…" />
+        <${Field} k="M" label="Mode d’action" value=${m.M} onChange=${(v) => setMini(i, "M", v)} placeholder="Je… (une seule action)" />
+      </div>
+      <${LintList} items=${lintPIM(m)} />
+    <//>` : null)}
+    <${Frame} title="5. Connaissance ou procédure réactivée" hint="Le savoir à rappeler en mémoire pour réussir">
+      <${Field} label="Titre et contenu" rows=${2} value=${d.connaissance} onChange=${(v) => set("connaissance", v)} placeholder="Ex. Le schéma narratif ; dans le doute, je ne pose pas ma carte" />
+    <//>
+    <${Frame} title="6. Relire et demander un retour">
+      <ol className="checklist small">${GRID.map((g, k) => html`<li key=${k}>${g}</li>`)}</ol>
+      <${CopyPrompt} build=${build} onCopied=${markDone} />
+      <div className="row end">${confirm
+        ? html`<span className="muted small">Effacer toute la trame ?</span><button className="btn danger" onClick=${() => { setD(EMPTY); setConfirm(false); }}>Oui, effacer</button><button className="btn" onClick=${() => setConfirm(false)}>Annuler</button>`
+        : html`<button className="btn" onClick=${() => setConfirm(true)}><${Icon} name="reset" />Nouvelle trame</button>`}</div>
+    <//>`;
+}
+
+/* ---------- Coquille de l’application ---------- */
+const SECTIONS = [
+  { id: "accueil", g: "Apprendre", label: "Accueil", icon: "accueil", title: "Décomposer une tâche complexe", sub: "Maximoi, minimoi et PIM d’après le programme ATOLE · parcours d’entraînement" },
+  { id: "comprendre", g: "Apprendre", label: "Comprendre", icon: "comprendre", title: "Comprendre", sub: "Les notions essentielles, une fiche à la fois" },
+  { id: "glossaire", g: "Apprendre", label: "Glossaire", icon: "glossaire", title: "Glossaire", sub: "Les mots utiles pour décomposer une tâche, avec un exemple" },
+  { id: "quiz", g: "Apprendre", label: "Quiz", icon: "quiz", title: "Quiz", sub: "Vérifier le vocabulaire, les concepts et les notions" },
+  { id: "pieges", g: "Apprendre", label: "Pièges et grille", icon: "pieges", title: "Les 5 pièges et la grille des 5 questions", sub: "Issus de l’analyse de l’atelier PIM · les outils pour tester un PIM" },
+  { id: "niveau-1", g: "S’entraîner", n: 1, label: "Exemples résolus", title: "Niveau 1 · Exemples résolus", sub: "Étudier des décompositions complètes et commentées" },
+  { id: "niveau-2", g: "S’entraîner", n: 2, label: "Remettre dans l’ordre", title: "Niveau 2 · Remettre les minimoi dans l’ordre", sub: "Retrouver la logique d’une décomposition" },
+  { id: "niveau-3", g: "S’entraîner", n: 3, label: "Corriger des PIM", title: "Niveau 3 · Corriger des PIM erronés", sub: "Diagnostiquer avec les pièges et la grille, puis réécrire" },
+  { id: "niveau-4", g: "S’entraîner", n: 4, label: "Compléter des PIM", title: "Niveau 4 · Compléter des PIM", sub: "Écrire une part de plus en plus grande du PIM" },
+  { id: "niveau-5", g: "S’entraîner", n: 5, label: "Trame vide", title: "Niveau 5 · Trame vide", sub: "Décomposer seul une tâche complète" },
+];
+const readHash = () => { const h = (location.hash || "").slice(1); return SECTIONS.some((s) => s.id === h) ? h : "accueil"; };
+
+function App() {
+  const [sec, setSec] = useState(readHash);
+  const [prog, setProg] = usePersist("prog", {});
+  const [scores, setScores] = usePersist("scores", {});
+  useEffect(() => { const f = () => setSec(readHash()); window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); }, []);
+  const go = useCallback((id) => { setSec(id); try { history.replaceState(null, "", "#" + id); } catch (e) {} window.scrollTo({ top: 0 }); }, []);
+  const mark = (id) => () => setProg((p) => (p[id] ? p : { ...p, [id]: true }));
+  const i = SECTIONS.findIndex((s) => s.id === sec);
+  const S = SECTIONS[i];
+  let body;
+  if (sec === "accueil") body = html`<${Accueil} go=${go} prog=${prog} />`;
+  else if (sec === "comprendre") body = html`<${Comprendre} markDone=${mark("comprendre")} />`;
+  else if (sec === "glossaire") body = html`<${Glossaire} />`;
+  else if (sec === "quiz") body = html`<${Quiz} scores=${scores} setScore=${(id, s) => setScores((o) => ({ ...o, [id]: s }))} />`;
+  else if (sec === "pieges") body = html`<${Pieges} />`;
+  else if (sec === "niveau-1") body = html`<${Niveau1} markDone=${mark("niveau-1")} />`;
+  else if (sec === "niveau-2") body = html`<${Niveau2} markDone=${mark("niveau-2")} />`;
+  else if (sec === "niveau-3") body = html`<${Niveau3} markDone=${mark("niveau-3")} />`;
+  else if (sec === "niveau-4") body = html`<${Niveau4} markDone=${mark("niveau-4")} />`;
+  else body = html`<${Niveau5} markDone=${mark("niveau-5")} />`;
+  const groups = ["Apprendre", "S’entraîner"];
+  return html`<div className="app">
+    <aside className="side">
+      <div className="side-head"><span className="side-kicker">Programme ATOLE</span><span className="side-title">Maximoi · minimoi · PIM</span><span className="side-sub">Formation EDI · entraînement</span></div>
+      <nav aria-label="Sections">${groups.map((g) => html`<div key=${g} className="navgroup"><div className="navlab">${g}</div>
+        ${SECTIONS.filter((s) => s.g === g).map((s) => html`<button key=${s.id} className="nav-btn" aria-current=${s.id === sec ? "page" : undefined} onClick=${() => go(s.id)}>
+          ${s.n ? html`<${Num} n=${s.n} done=${prog[s.id]} />` : html`<${Icon} name=${s.icon} />`}<span>${s.label}</span>${!s.n && (prog[s.id] || (s.id === "quiz" && Object.keys(scores).length === QUIZZES.length)) ? html`<span className="tick"><${Icon} name="check" size=${14} /></span>` : null}</button>`)}</div>`)}</nav>
+      <div className="side-foot">Inspiré du programme ATOLE © J.-P. Lachaux, INSERM · <a href="https://project.crnl.fr/atole/" target="_blank" rel="noopener">project.crnl.fr/atole</a><br />Exemples adaptés des documents de la formation EDI, CC BY-SA 4.0.</div>
+    </aside>
+    <main className="main">
+      <div className="page">
+        <header className="page-head"><h1>${S.title}</h1><p>${S.sub}</p></header>
+        ${body}
+        <div className="pager">
+          ${i > 0 ? html`<button className="btn" onClick=${() => go(SECTIONS[i - 1].id)}><${Icon} name="prev" />${SECTIONS[i - 1].label}</button>` : html`<span></span>`}
+          ${i < SECTIONS.length - 1 ? html`<button className="btn" onClick=${() => go(SECTIONS[i + 1].id)}>${SECTIONS[i + 1].label}<${Icon} name="next" /></button>` : null}
+        </div>
+      </div>
+    </main>
+  </div>`;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
+
+})();
+</script>
+</body>
+</html>
