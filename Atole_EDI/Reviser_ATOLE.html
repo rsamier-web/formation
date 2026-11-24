@@ -1254,8 +1254,6 @@ const AFFIRM = [
   x: "Être prévenu permet d’ajuster son niveau d’attention. C’est une condition nécessaire, mais pas suffisante." },
 { s: "La plupart des erreurs du quotidien viennent d’un contact rompu sur une poutre étroite ou haute, plutôt que d’une incapacité.", e: "A", m: "attention", mat: 1, o: 14,
   x: "Verser le café à côté, oublier les sacs de courses : souvent, le mode automatique n’a pas été ajusté à une poutre étroite ou haute." },
-{ s: "Les sensations de risque ou de plaisir augmentent spontanément la concentration, mais on ne peut pas compter uniquement sur elles.", e: "A", m: "attention", mat: 1,
-  x: "Le risque et le plaisir rendent la poutre « visible », mais beaucoup de tâches scolaires sont peu plaisantes et sans risque apparent : il faut apprendre à évaluer la poutre." },
 // Une chose à la fois
 { s: "On peut réaliser correctement et en même temps deux tâches non automatisées : c’est l’attention divisée.", e: "D", m: "attention", mat: 1, o: 2,
   x: "Le cerveau ne traite qu’une tâche à la fois. L’impression de multitâche vient d’un échantillonnage rapide entre des tâches automatisées. Deux tâches non automatisées : surcharge et erreurs." },
@@ -1342,14 +1340,15 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
 const html = htm.bind(React.createElement);
 const IMG = (n) => "img/" + n + ".webp";
 const KEY = "atole-edi-reviser-v1";
+const AFF_VER = 2;
 const MAIL = "contact@apstraco.fr";
 const MIN = 60000, DAY = 86400000;
 const EVAL_MODS = MODULES.filter((m) => !m.noEval);
 const MOD = Object.fromEntries(MODULES.map((m) => [m.id, m]));
 
 /* ---------- Stockage local ---------- */
-const DEFAULT = { read: {}, quiz: {}, fc: { cards: {}, newLimit: 15, dir: "td", themes: [], today: { d: "", n: 0 } }, aff: { ans: {}, done: false, date: null }, se: { checks: {}, notes: {}, ops: {}, general: "", name: "", attach: true } };
-const load = () => { try { const o = JSON.parse(localStorage.getItem(KEY)); return o ? { ...DEFAULT, ...o, fc: { ...DEFAULT.fc, ...(o.fc || {}) }, aff: { ...DEFAULT.aff, ...(o.aff || {}) }, se: { ...DEFAULT.se, ...(o.se || {}) } } : DEFAULT; } catch (e) { return DEFAULT; } };
+const DEFAULT = { affVer: 2, read: {}, quiz: {}, fc: { cards: {}, newLimit: 15, dir: "td", themes: [], today: { d: "", n: 0 } }, aff: { ans: {}, done: false, date: null }, se: { checks: {}, notes: {}, ops: {}, general: "", name: "", attach: true } };
+const load = () => { try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && (o.affVer || 1) < AFF_VER) { o.aff = DEFAULT.aff; } if (o) o.affVer = AFF_VER; return o ? { ...DEFAULT, ...o, fc: { ...DEFAULT.fc, ...(o.fc || {}) }, aff: { ...DEFAULT.aff, ...(o.aff || {}) }, se: { ...DEFAULT.se, ...(o.se || {}) } } : DEFAULT; } catch (e) { return DEFAULT; } };
 const save = (o) => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
 
 /* ---------- Utilitaires ---------- */
@@ -1796,17 +1795,19 @@ function QuizRun({ m, set }) {
 
 /* ---------- Questionnaire d’auto-positionnement ---------- */
 const LIK = [["Pas du tout d’accord", "– –"], ["Plutôt pas d’accord", "–"], ["Plutôt d’accord", "+"], ["Tout à fait d’accord", "+ +"]];
+AFFIRM.forEach((it) => { it.id = slug(it.s).slice(0, 48); });
 const ORDER = seededShuffle(AFFIRM.map((_, k) => k), 2026);
+const AK = (k) => AFFIRM[k].id;
 const verdict = (it, v) => { if (v == null) return null; const agree = v >= 2; const ok = (it.e === "A") === agree; if (!ok) return "ko"; return v === 0 || v === 3 ? "ok" : "mid"; };
 function affScore(ans) {
   let ok = 0, franc = 0, n = 0; const by = {};
-  AFFIRM.forEach((it, k) => { const v = ans[k]; if (v == null) return; n++; const r = verdict(it, v); by[it.m] = by[it.m] || { ok: 0, n: 0 }; by[it.m].n++; if (r !== "ko") { ok++; by[it.m].ok++; } if (r === "ok") franc++; });
+  AFFIRM.forEach((it, k) => { const v = ans[AK(k)]; if (v == null) return; n++; const r = verdict(it, v); by[it.m] = by[it.m] || { ok: 0, n: 0 }; by[it.m].n++; if (r !== "ko") { ok++; by[it.m].ok++; } if (r === "ok") franc++; });
   return { ok, franc, n, pct: pct(ok, AFFIRM.length), by };
 }
 function Questionnaire({ st, set }) {
-  const ans = st.aff.ans; const answered = Object.keys(ans).length;
+  const ans0 = st.aff.ans; const ans = Object.fromEntries(AFFIRM.map((it, k) => [k, ans0[it.id]]).filter(([, v]) => v != null)); const answered = Object.keys(ans).length;
   const [step, setStep] = useState(st.aff.done ? "res" : "intro"); const [pos, setPos] = useState(0); const [filter, setFilter] = useState("work");
-  const setAns = (k, v) => set((o) => ({ ...o, aff: { ...o.aff, ans: { ...o.aff.ans, [k]: v } } }));
+  const setAns = (k, v) => set((o) => ({ ...o, aff: { ...o.aff, ans: { ...o.aff.ans, [AK(k)]: v } } }));
   const finish = () => { set((o) => ({ ...o, aff: { ...o.aff, done: true, date: new Date().toISOString() } })); setStep("res"); window.scrollTo(0, 0); };
   const restart = () => { set((o) => ({ ...o, aff: { ans: {}, done: false, date: null } })); setPos(0); setStep("run"); };
   useEffect(() => {
@@ -1839,7 +1840,7 @@ function Questionnaire({ st, set }) {
       <div className="dots" aria-label="Accès direct">${ORDER.map((kk, p) => html`<button key=${p} className=${"dot" + (p === pos ? " cur" : ans[kk] != null ? " ok" : "")} style=${{ cursor: "pointer" }} onClick=${() => setPos(p)} aria-label=${"Affirmation " + (p + 1)}>${p + 1}</button>`)}</div>
     </div>`;
   }
-  const sc = affScore(ans);
+  const sc = affScore(ans0);
   const mods = EVAL_MODS.filter((m) => sc.by[m.id]).map((m) => ({ m, ...sc.by[m.id], p: pct(sc.by[m.id].ok, sc.by[m.id].n) }));
   const weak = mods.filter((x) => x.p < 75);
   const items = ORDER.map((k, p) => ({ k, p, it: AFFIRM[k], v: ans[k], r: verdict(AFFIRM[k], ans[k]) }));
@@ -1890,7 +1891,7 @@ function buildMail(st) {
     L.push("", "SYNTHÈSE DE MES RÉSULTATS DANS L’APPLICATION « RÉVISER ATOLE »");
     if (st.aff.done) { const sc = affScore(st.aff.ans); const weak = EVAL_MODS.filter((m) => sc.by[m.id] && pct(sc.by[m.id].ok, sc.by[m.id].n) < 75).map((m) => m.title);
       L.push("- Questionnaire d’auto-positionnement : " + sc.ok + "/" + AFFIRM.length + " réponses dans le sens attendu (" + sc.pct + " %)" + (weak.length ? " ; à retravailler : " + weak.join(", ") : ""));
-      const ko = AFFIRM.map((it, k) => ({ it, r: verdict(it, st.aff.ans[k]) })).filter((x) => x.r === "ko");
+      const ko = AFFIRM.map((it) => ({ it, r: verdict(it, st.aff.ans[it.id]) })).filter((x) => x.r === "ko");
       if (ko.length) { L.push("  Affirmations où ma réponse diffère de la réponse attendue :"); ko.forEach((x) => L.push("  • " + x.it.s)); }
     } else L.push("- Questionnaire d’auto-positionnement : non réalisé");
     const qz = EVAL_MODS.filter((m) => st.quiz[m.id]).map((m) => m.title + " " + st.quiz[m.id].best + " %");
