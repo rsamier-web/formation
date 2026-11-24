@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier PIM · Formation EDI</title>
+<meta name="description" content="Deux applications pour apprendre à décomposer une tâche complexe en maximoi, minimoi et PIM, d’après le programme ATOLE.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: sobre et pédagogique, comme une page d’accueil d’application KDE.
+IDEA: le lanceur d’applications de Plasma : deux grandes tuiles d’application, chacune avec son aperçu.
+PICTURE: un aperçu miniature de chaque application (parcours en niveaux ; liste et fiche I/P/M).
+COLOUR and TYPE: Breeze (#eff0f1, #fcfcfc, bleu #3daee9) et Breeze Dark ; Noto Sans ; codes I/P/M bleu, vert, orange.
+LAYOUT: barre de titre, introduction, deux tuiles côte à côte (empilées sous 760px), parcours conseillé, pied de page.
+*/
+:root{color-scheme:light dark;
+--win:light-dark(#eff0f1,#2a2e32);--view:light-dark(#fcfcfc,#1b1e20);--alt:light-dark(#f4f5f6,#232629);
+--ink:light-dark(#232627,#eff0f1);--mute:light-dark(#5f686d,#a1a9b1);--line:light-dark(#d1d5d9,#3f4448);
+--hi:#3daee9;--hi-ink:light-dark(#1d6fa0,#7fcef5);--hi-bg:light-dark(#dff2fc,#1c3a4d);--title:light-dark(#dee0e2,#31363b);
+--ci:#3daee9;--cp:#27ae60;--cm:#f67400;
+--ci-bg:light-dark(#e3f4fc,#16303f);--cp-bg:light-dark(#e2f5ea,#16301f);--cm-bg:light-dark(#fdeee0,#3a2410);
+--r:4px;--sh:0 1px 2px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.06)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--win);color:var(--ink);font:16px/1.55 "Noto Sans","Segoe UI",Ubuntu,"Helvetica Neue",Arial,sans-serif;overflow-x:clip}
+a{color:var(--hi-ink)}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+.ico{flex:none;vertical-align:-3px}
+
+.titlebar{display:flex;align-items:center;gap:10px;padding:10px max(4vw,16px);background:var(--title);border-bottom:1px solid var(--line);font-size:15px}
+.logo{display:grid;grid-template-columns:repeat(3,6px);gap:2px;align-items:end}
+.logo i{display:block;width:6px;border-radius:1px}.logo i:nth-child(1){height:9px;background:var(--ci)}.logo i:nth-child(2){height:14px;background:var(--cp)}.logo i:nth-child(3){height:19px;background:var(--cm)}
+.titlebar .sub{color:var(--mute)}
+
+main{max-width:1180px;margin:0 auto;padding:clamp(24px,4vw,48px) max(4vw,16px) 40px}
+.intro{max-width:760px}
+.kicker{font-size:13px;font-weight:600;color:var(--hi-ink);margin:0 0 6px}
+h1{font-size:clamp(30px,4vw,44px);line-height:1.08;margin:0 0 14px;font-weight:600;text-wrap:balance}
+.intro p{margin:0 0 10px;font-size:17px}
+.pimline{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.pimline li{display:flex;align-items:center;gap:6px;font-size:14px;border-radius:var(--r);padding:4px 10px;border-left:3px solid}
+.pimline .i{background:var(--ci-bg);border-color:var(--ci)}.pimline .p{background:var(--cp-bg);border-color:var(--cp)}.pimline .m{background:var(--cm-bg);border-color:var(--cm)}
+
+.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:36px 0 0}
+.app{background:var(--view);border:1px solid var(--line);border-radius:6px;box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden}
+.preview{background:var(--alt);border-bottom:1px solid var(--line);padding:18px;min-height:210px;display:flex;align-items:center;justify-content:center}
+.app-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
+.app h2{font-size:24px;line-height:1.2;margin:0;font-weight:600}
+.goal{margin:0;font-size:17px}
+.app h3{font-size:13px;font-weight:700;color:var(--mute);margin:4px 0 0}
+.app ul{margin:0;padding-left:20px}.app li{margin:3px 0}
+.who{margin:0;font-size:14px;color:var(--mute)}
+.open{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 18px;border-radius:var(--r);background:var(--hi);color:#fff;text-decoration:none;font-weight:600}
+.open:hover{filter:brightness(1.05);box-shadow:0 0 0 3px var(--hi-bg)}
+
+/* Aperçu : Décomposer */
+.mock{width:100%;max-width:420px;background:var(--view);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);display:grid;grid-template-columns:120px minmax(0,1fr);overflow:hidden;font-size:12px}
+.mock .side{background:var(--win);border-right:1px solid var(--line);padding:8px 6px;display:flex;flex-direction:column;gap:3px}
+.mock .side span{padding:3px 6px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mock .side .g{font-size:10px;font-weight:700;color:var(--mute);padding-top:6px}
+.mock .side .on{background:var(--hi);color:#fff}
+.mock .side .lv::before{content:attr(data-n);display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--line);font-size:9px;font-weight:700;margin-right:5px;color:var(--mute)}
+.mock .side .on.lv::before{border-color:#fff;color:#fff}
+.mock .pane{padding:10px;display:flex;flex-direction:column;gap:6px}
+.bar{height:7px;border-radius:2px;background:var(--line)}
+.maxi{border-left:3px solid var(--hi);background:var(--alt);padding:5px 8px;border-radius:3px}
+.row3{display:flex;flex-direction:column;gap:4px}
+.row3 div{display:flex;gap:6px;align-items:center;border-left:3px solid;border-radius:2px;padding:3px 6px}
+.row3 .i{background:var(--ci-bg);border-color:var(--ci)}.row3 .p{background:var(--cp-bg);border-color:var(--cp)}.row3 .m{background:var(--cm-bg);border-color:var(--cm)}
+.row3 b{font-size:10px;width:62px;flex:none}
+.row3 .bar{flex:1;height:6px;opacity:.7}
+.btnmock{align-self:flex-start;background:var(--hi);color:#fff;border-radius:3px;padding:3px 8px;font-size:11px;font-weight:600}
+
+/* Aperçu : Bibliothèque */
+.mock.lib{grid-template-columns:130px minmax(0,1fr)}
+.search{grid-column:1/-1;display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--win)}
+.search span{flex:1;background:var(--view);border:1px solid var(--hi);border-radius:3px;padding:2px 8px}
+mark{background:light-dark(#fdf0a8,#6b5b10);color:inherit;border-radius:2px}
+.list{border-right:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:4px}
+.list span{padding:4px 6px;border-radius:3px;line-height:1.25}
+.list .on{background:light-dark(#c5e8fa,#24526d);outline:1px solid var(--hi)}
+.list small{display:block;color:var(--mute);font-size:10px}
+.steps{display:flex;gap:4px}.steps i{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--line);font-size:9px;font-style:normal;font-weight:700;color:var(--mute)}
+.steps i.on{background:var(--hi);border-color:var(--hi);color:#fff}
+
+.path{margin:44px 0 0}
+.path h2{font-size:26px;margin:0 0 6px;font-weight:600}
+.path > p{margin:0 0 18px;max-width:70ch}
+.path ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:s}
+.path li{background:var(--view);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;counter-increment:s;position:relative}
+.path li::before{content:counter(s);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--hi);color:#fff;font-weight:700;font-size:14px;margin-bottom:8px}
+.path li b{display:block;font-size:17px;margin-bottom:4px}
+.path li p{margin:0;font-size:15px}
+.path li a{font-weight:600}
+
+footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-size:14px;color:var(--mute);display:flex;flex-direction:column;gap:4px}
+
+@media (max-width:860px){.apps,.path ol{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:600px){.titlebar .sub{display:none}.preview{padding:12px;min-height:0}.mock{grid-template-columns:96px minmax(0,1fr)}.mock.lib{grid-template-columns:110px minmax(0,1fr)}.intro p{font-size:16px}}
+</style>
+</head>
+<body>
+<header class="titlebar">
+  <span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span><b>Atelier PIM</b><span class="sub"> · Formation EDI d’après le programme ATOLE</span></span>
+</header>
+
+<main>
+  <section class="intro">
+    <p class="kicker">Deux applications, une compétence</p>
+    <h1>Décomposer une tâche complexe en maximoi, minimoi et PIM</h1>
+    <p>Pour aider un apprenant à rester concentré, on découpe une tâche complexe : <b>Maximoi</b> fixe le but et les étapes, <b>minimoi</b> les réalise une à une. Pour chaque étape où l’apprenant risque d’échouer, un <b>PIM</b> lui dit où porter son attention et quoi faire.</p>
+    <p>La première application sert à <b>apprendre et s’entraîner</b> à cette décomposition. La seconde sert à <b>consulter, rechercher et adapter</b> des décompositions déjà rédigées.</p>
+    <ul class="pimline" aria-label="Les trois éléments d’un PIM">
+      <li class="i"><b>Intention</b> · ce que je veux réussir</li>
+      <li class="p"><b>Perception</b> · où je porte mon attention</li>
+      <li class="m"><b>Manière d’agir</b> · la seule action à faire</li>
+    </ul>
+  </section>
+
+  <section class="apps" aria-label="Les applications">
+    <article class="app">
+      <div class="preview" aria-hidden="true">
+        <div class="mock">
+          <div class="side">
+            <span class="g">Apprendre</span><span>Comprendre</span><span>Glossaire</span><span>Quiz</span><span>Pièges et grille</span>
+            <span class="g">S’entraîner</span><span class="lv" data-n="1">Exemples</span><span class="lv" data-n="2">Ordre</span><span class="lv" data-n="3">Corriger</span><span class="lv" data-n="4">Compléter</span><span class="lv on" data-n="5">Trame vide</span>
+          </div>
+          <div class="pane">
+            <div class="maxi">Mon objectif est de…</div>
+            <div class="bar" style="width:70%"></div><div class="bar" style="width:55%"></div>
+            <div class="row3"><div class="i"><b>Intention</b><span class="bar"></span></div><div class="p"><b>Perception</b><span class="bar"></span></div><div class="m"><b>Manière d’agir</b><span class="bar"></span></div></div>
+            <span class="btnmock">Copier le prompt de feed-back</span>
+          </div>
+        </div>
+      </div>
+      <div class="app-body">
+        <h2>Décomposer une tâche complexe</h2>
+        <p class="goal"><b>Objectif :</b> acquérir pas à pas la compétence de décomposition, de la compréhension des notions jusqu’à une décomposition rédigée seul.</p>
+        <h3>Ce que vous y trouvez</h3>
+        <ul>
+          <li><b>Apprendre</b> : les notions en fiches courtes, un glossaire, un quiz, les 5 pièges fréquents et la grille des 5 questions pour tester un PIM.</li>
+          <li><b>S’entraîner</b> en 5 niveaux de difficulté croissante : étudier des exemples résolus, remettre des minimoi dans l’ordre, corriger des PIM erronés, compléter des PIM, puis décomposer seul une tâche dans une trame vide.</li>
+          <li>Un prompt à copier pour obtenir le retour d’une IA générative sur sa production.</li>
+        </ul>
+        <p class="who">Pour : les participants de la formation et toute personne qui découvre les PIM.</p>
+        <a class="open" href="Decomposer_maximoi_minimoi_PIM.html">Ouvrir « Décomposer »
+          <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </article>
+
+    <article class="app">
+      <div class="preview" aria-hidden="true">
+        <div class="mock lib">
+          <div class="search">⌕ <span><mark>petit film</mark></span></div>
+          <div class="list">
+            <span class="on">Comprendre un texte<small>Primaire · 4 PIM</small></span>
+            <span>Faire des cookies<small>dès 6 ans · 9 PIM</small></span>
+            <span>Résoudre un problème<small>Cycle 3 · 8 PIM</small></span>
+          </div>
+          <div class="pane">
+            <div class="maxi">Mon objectif est de comprendre un texte.</div>
+            <div class="steps"><i>1</i><i class="on">2</i><i>3</i><i>4</i></div>
+            <div class="row3"><div class="i"><b>Intention</b><span class="bar"></span></div><div class="p"><b>Perception</b><span class="bar"></span></div><div class="m"><b>Manière d’agir</b><span class="bar"></span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="app-body">
+        <h2>Bibliothèque PIM</h2>
+        <p class="goal"><b>Objectif :</b> retrouver rapidement une tâche déjà décomposée, s’en inspirer et l’adapter à son apprenant.</p>
+        <h3>Ce que vous y trouvez</h3>
+        <ul>
+          <li>45 décompositions rédigées par des enseignants et des professionnels, de la maternelle au lycée : lecture, écriture, mathématiques, sciences, motricité, autonomie, vie quotidienne…</li>
+          <li>Une recherche dans tout le contenu ou seulement dans l’Intention, la Perception ou la Manière d’agir, et des filtres par domaine et par public.</li>
+          <li>Deux lectures : le plan de toute la tâche, ou un minimoi à la fois en pas à pas.</li>
+          <li>Une trame vide, avec le bouton « Adapter » pour partir d’une fiche existante, et un prompt de feed-back à copier.</li>
+        </ul>
+        <p class="who">Pour : les enseignants et les professionnels qui préparent des PIM pour leurs élèves ou leurs patients.</p>
+        <a class="open" href="Bibliotheque_PIM.html">Ouvrir la Bibliothèque
+          <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </article>
+  </section>
+
+  <section class="path">
+    <h2>Utiliser les deux applications ensemble</h2>
+    <p>Un parcours conseillé pour passer de la découverte à la pratique :</p>
+    <ol>
+      <li><b>Se former</b><p>Dans <a href="Decomposer_maximoi_minimoi_PIM.html">Décomposer</a>, lisez les notions, les pièges et la grille, puis faites les niveaux 1 à 4.</p></li>
+      <li><b>S’inspirer</b><p>Dans la <a href="Bibliotheque_PIM.html">Bibliothèque</a>, cherchez une tâche proche de la vôtre et observez comment ses PIM sont rédigés.</p></li>
+      <li><b>Produire et obtenir un retour</b><p>Rédigez votre décomposition dans une trame vide, puis copiez le prompt et collez-le dans l’IA générative de votre choix pour l’améliorer.</p></li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>Démarche inspirée du programme <a href="https://project.crnl.fr/atole/">ATOLE</a> (Jean-Philippe Lachaux, Inserm).</span>
+    <span>Fiches de la bibliothèque : Rémi Samier, Sylvie Jacques et leurs co-auteurs, licence Creative Commons CC BY-SA 4.0.</span>
+  </footer>
+</main>
+</body>
+</html>
