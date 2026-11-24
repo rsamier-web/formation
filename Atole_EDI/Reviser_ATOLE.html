@@ -313,6 +313,40 @@ textarea.ta { min-height: 72px; }
 pre.mail { white-space: pre-wrap; font-family: var(--font); font-size: 13.5px; background: var(--view-alt); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; max-height: 360px; overflow: auto; margin: 0; }
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--view); padding: 8px 16px; border-radius: var(--r); font-size: 14px; z-index: 50; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
 
+
+/* Échelle d’auto-évaluation */
+.legend4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+.legend4 .lg { padding: 8px 10px; border: 1px solid var(--line); border-top: 3px solid; border-radius: var(--r); background: var(--view-alt); display: grid; gap: 2px; font-size: 13.5px; }
+.legend4 .lg span { color: var(--ink-2); font-size: 13px; }
+.lg.l0, .sc.l0 { --lc: var(--bad); } .lg.l1, .sc.l1 { --lc: var(--warn); } .lg.l2, .sc.l2 { --lc: var(--good); } .lg.l3, .sc.l3 { --lc: var(--accent); }
+.legend4 .lg { border-top-color: var(--lc); }
+.objs { display: grid; }
+.obj { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 16px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.obj:first-child { border-top: 0; }
+.obj-t { font-size: 14.5px; }
+.scale { display: grid; grid-template-columns: repeat(4, 34px); gap: 4px; }
+.sc { height: 32px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--view); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.sc .n { font-weight: 600; font-size: 14px; } .sc .t { display: none; }
+.sc:hover { border-color: var(--lc); }
+.sc[aria-checked="true"] { background: var(--lc); border-color: var(--lc); color: #fff; }
+.scale.big { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 560px); }
+.scale.big .sc { height: auto; min-height: 40px; padding: 5px 6px; grid-template-columns: auto; gap: 0; text-align: center; }
+.scale.big .sc .t { display: block; font-size: 12.5px; line-height: 1.2; }
+.scale.big .sc .n { font-size: 13px; }
+.global { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px 16px; align-items: center; padding: 12px 14px; border: 1px solid var(--accent-line); background: var(--accent-tint); border-radius: var(--r); }
+.global > div:first-child { display: grid; gap: 2px; }
+.global .lbl { margin: 0; color: var(--ink); }
+.tb-sub { grid-column: 2 / -1; margin-top: -6px; }
+@media (max-width: 760px) {
+  .legend4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .obj, .global { grid-template-columns: minmax(0,1fr); }
+  .scale { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .scale.big { width: 100%; }
+  .scale.big .sc { padding: 5px 3px; }
+  .scale.big .sc .t { font-size: 11px; hyphens: auto; overflow-wrap: anywhere; }
+  .tb-sub { grid-column: 1 / -1; margin-top: 0; }
+}
+
 @media (max-width: 980px) {
   .app { grid-template-columns: minmax(0,1fr); }
   .side { position: fixed; inset: 0 auto 0 0; width: 290px; z-index: 40; transform: translateX(-100%); transition: transform .18s; box-shadow: 0 0 24px rgba(0,0,0,.25); }
@@ -1347,7 +1381,7 @@ const EVAL_MODS = MODULES.filter((m) => !m.noEval);
 const MOD = Object.fromEntries(MODULES.map((m) => [m.id, m]));
 
 /* ---------- Stockage local ---------- */
-const DEFAULT = { affVer: 2, read: {}, quiz: {}, fc: { cards: {}, newLimit: 15, dir: "td", themes: [], today: { d: "", n: 0 } }, aff: { ans: {}, done: false, date: null }, se: { checks: {}, notes: {}, ops: {}, general: "", name: "", attach: true } };
+const DEFAULT = { affVer: 2, read: {}, quiz: {}, fc: { cards: {}, newLimit: 15, dir: "td", themes: [], today: { d: "", n: 0 } }, aff: { ans: {}, done: false, date: null }, se: { lv: {}, cl: {}, ol: {}, notes: {}, general: "", name: "", attach: true } };
 const load = () => { try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && (o.affVer || 1) < AFF_VER) { o.aff = DEFAULT.aff; } if (o) o.affVer = AFF_VER; return o ? { ...DEFAULT, ...o, fc: { ...DEFAULT.fc, ...(o.fc || {}) }, aff: { ...DEFAULT.aff, ...(o.aff || {}) }, se: { ...DEFAULT.se, ...(o.se || {}) } } : DEFAULT; } catch (e) { return DEFAULT; } };
 const save = (o) => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
 
@@ -1872,20 +1906,30 @@ function Questionnaire({ st, set }) {
   </div>`;
 }
 
-/* ---------- Auto-évaluation des compétences ---------- */
+/* ---------- Auto-évaluation des compétences (échelle de Likert à 4 niveaux) ---------- */
+const LEVELS = [
+  ["Pas acquis", "Je ne saurais pas l’expliquer ni l’appliquer."],
+  ["En cours d’acquisition", "Je comprends l’idée, mais j’ai besoin du support."],
+  ["Acquis", "Je sais l’expliquer et l’appliquer en séance."],
+  ["Maîtrisé", "Je saurais l’expliquer à un enfant, à sa famille ou à un collègue."]
+];
+const LV_CLS = ["l0", "l1", "l2", "l3"];
+const lvTxt = (v) => (v == null ? "non évalué" : (v + 1) + "/4 – " + LEVELS[v][0]);
+const avg = (vals) => { const v = vals.filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b + 1, 0) / v.length : null; };
+const fmt1 = (x) => x.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 function buildMail(st) {
-  const se = st.se; const L = [];
+  const se = st.se; const lv = se.lv || {}; const cl = se.cl || {}; const ol = se.ol || {}; const L = [];
   L.push("Bonjour Sylvie et Rémi,", "", "Voici mon auto-évaluation pour la formation « TND : programme de psychoéducation et de remédiation cognitive de l’attention et des fonctions exécutives ».", "");
   if (se.name) L.push("Nom : " + se.name);
-  L.push("Date : " + new Date().toLocaleDateString("fr-FR"), "", "COMPÉTENCES VISÉES");
+  L.push("Date : " + new Date().toLocaleDateString("fr-FR"), "", "Échelle : 1 = Pas acquis · 2 = En cours d’acquisition · 3 = Acquis · 4 = Maîtrisé", "", "COMPÉTENCES VISÉES");
   COMPETENCES.forEach((c, i) => {
-    const n = c.o.filter((_, j) => se.checks[c.id + "-" + j]).length;
-    L.push("", (i + 1) + ". " + c.t + " (" + n + "/" + c.o.length + ")");
-    c.o.forEach((o, j) => L.push("   [" + (se.checks[c.id + "-" + j] ? "x" : " ") + "] " + o));
+    const a = avg(c.o.map((_, j) => lv[c.id + "-" + j]));
+    L.push("", (i + 1) + ". " + c.t, "   Évaluation globale de la compétence : " + lvTxt(cl[c.id]) + (a != null ? " (moyenne de mes objectifs : " + fmt1(a) + "/4)" : ""));
+    c.o.forEach((o, j) => L.push("   • " + o + " : " + lvTxt(lv[c.id + "-" + j])));
     if (se.notes[c.id] && se.notes[c.id].trim()) L.push("   Difficultés, questions : " + se.notes[c.id].trim());
   });
   L.push("", "OBJECTIFS OPÉRATIONNELS");
-  OBJ_OP.forEach((o, j) => L.push("   [" + (se.ops[j] ? "x" : " ") + "] " + o));
+  OBJ_OP.forEach((o, j) => L.push("   • " + o + " : " + lvTxt(ol[j])));
   if (se.general && se.general.trim()) L.push("", "MESSAGE AUX FORMATEURS", se.general.trim());
   if (se.attach) {
     L.push("", "SYNTHÈSE DE MES RÉSULTATS DANS L’APPLICATION « RÉVISER ATOLE »");
@@ -1902,28 +1946,46 @@ function buildMail(st) {
   L.push("", "Cordialement,", se.name || "");
   return L.join("\n");
 }
+function Scale({ v, onSet, label, big }) {
+  return html`<div className=${"scale" + (big ? " big" : "")} role="radiogroup" aria-label=${label}>${LEVELS.map(([t, d], k) => html`<button key=${k} type="button" role="radio" aria-checked=${v === k} className=${"sc " + LV_CLS[k]} title=${d} onClick=${() => onSet(v === k ? null : k)}><span className="n">${k + 1}</span><span className="t">${t}</span></button>`)}</div>`;
+}
 function SelfEval({ st, set, toast }) {
-  const se = st.se;
+  const se = st.se; const lv = se.lv || {}; const cl = se.cl || {}; const ol = se.ol || {};
   const up = (patch) => set((o) => ({ ...o, se: { ...o.se, ...patch } }));
+  const setLv = (id, v) => up({ lv: { ...lv, [id]: v } });
   const mail = buildMail(st);
   const subject = "Auto-évaluation formation EDI ATOLE" + (se.name ? " – " + se.name : "");
   const doCopy = async () => { toast((await copyText(mail)) ? "Message copié dans le presse-papiers" : "La copie a échoué : sélectionnez le texte à la main"); };
   const doMail = async () => { await copyText(mail); const url = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(mail); if (url.length > 1900) { window.location.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent("[Collez ici le message copié depuis l’application : Ctrl+V ou Cmd+V]"); toast("Message copié : collez-le dans le courriel qui s’ouvre"); } else { window.location.href = url; toast("Message copié et courriel ouvert"); } };
-  const total = COMPETENCES.reduce((a, c) => a + c.o.length, 0), checked = COMPETENCES.reduce((a, c) => a + c.o.filter((_, j) => se.checks[c.id + "-" + j]).length, 0);
+  const total = COMPETENCES.reduce((a, c) => a + c.o.length + 1, 0) + OBJ_OP.length;
+  const done = COMPETENCES.reduce((a, c) => a + c.o.filter((_, j) => lv[c.id + "-" + j] != null).length + (cl[c.id] != null ? 1 : 0), 0) + OBJ_OP.filter((_, j) => ol[j] != null).length;
   return html`<div className="page">
-    <${PageHead} kicker="Se situer" title="Auto-évaluation des compétences" sub="Cochez les objectifs que vous vous sentez capable d’atteindre, notez vos difficultés et vos questions, puis envoyez le tout aux formateurs." />
-    <div className="progress"><${Meter} v=${pct(checked, total)} good=${checked === total} /><span>${checked} / ${total} objectifs cochés</span></div>
-    ${COMPETENCES.map((c, i) => html`<${Frame} key=${c.id} title=${"Compétence " + (i + 1)} hint=${MATINEES[c.mat]}>
+    <${PageHead} kicker="Se situer" title="Auto-évaluation des compétences" sub="Pour chaque objectif, puis pour chaque compétence dans son ensemble, situez votre degré d’acquisition. Notez vos difficultés et vos questions, puis envoyez le tout aux formateurs." />
+    <${Frame} title="L’échelle">
+      <div className="legend4">${LEVELS.map(([t, d], k) => html`<div key=${k} className=${"lg " + LV_CLS[k]}><b>${k + 1} · ${t}</b><span>${d}</span></div>`)}</div>
+      <p className="small muted">Il n’y a pas de position neutre. Cliquez à nouveau sur un niveau pour l’effacer.</p><//>
+    <${Frame} title="Vue d’ensemble" hint=${done + " / " + total + " évaluations"}>
+      <div className="themebars">${COMPETENCES.map((c, i) => { const a = avg(c.o.map((_, j) => lv[c.id + "-" + j])); const g = cl[c.id]; const n = c.o.filter((_, j) => lv[c.id + "-" + j] != null).length;
+        return html`<div className="tb" key=${c.id}><button className="linkbtn" onClick=${() => { const el = document.getElementById("comp-" + c.id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }}>Compétence ${i + 1}</button>
+          <${Meter} v=${a == null ? 0 : ((a - 1) / 3) * 100} good=${a != null && a >= 3} /><span className="v">${a == null ? "–" : fmt1(a) + "/4"}</span>
+          <span className="tb-sub small muted">${n}/${c.o.length} objectifs · globale : ${g == null ? "–" : (g + 1) + "/4"}</span></div>`; })}</div><//>
+    ${COMPETENCES.map((c, i) => { const a = avg(c.o.map((_, j) => lv[c.id + "-" + j])); const g = cl[c.id];
+      const gap = a != null && g != null && Math.abs(g + 1 - a) >= 1;
+      return html`<${Frame} key=${c.id} id=${"comp-" + c.id} title=${"Compétence " + (i + 1)} hint=${MATINEES[c.mat]}>
       <div className="comp"><h3>${c.t}</h3>
-        <div>${c.o.map((o, j) => { const id = c.id + "-" + j; return html`<label key=${id} className="check"><input type="checkbox" checked=${!!se.checks[id]} onChange=${(e) => up({ checks: { ...se.checks, [id]: e.target.checked } })} /><span>${o}</span></label>`; })}</div>
-        <label className="small"><span className="lbl">Mes difficultés, mes questions (facultatif)</span><textarea className="ta" value=${se.notes[c.id] || ""} onInput=${(e) => up({ notes: { ...se.notes, [c.id]: e.target.value } })} placeholder="Ce qui reste flou, une situation clinique où j’hésite…"></textarea></label></div><//>`)}
-    <${Frame} title="Objectifs opérationnels de la formation">
-      <div>${OBJ_OP.map((o, j) => html`<label key=${j} className="check"><input type="checkbox" checked=${!!se.ops[j]} onChange=${(e) => up({ ops: { ...se.ops, [j]: e.target.checked } })} /><span>Je me sens capable de : ${o.charAt(0).toLowerCase() + o.slice(1)}</span></label>`)}</div><//>
+        <div className="objs">${c.o.map((o, j) => { const id = c.id + "-" + j; return html`<div key=${id} className="obj"><span className="obj-t">${o}</span><${Scale} v=${lv[id]} label=${o} onSet=${(v) => setLv(id, v)} /></div>`; })}</div>
+        <div className="global"><div><span className="lbl">Évaluation globale de la compétence</span><span className="small muted">${a == null ? "Évaluez d’abord les objectifs ci-dessus." : "Moyenne de vos objectifs : " + fmt1(a) + "/4"}</span></div>
+          <${Scale} big=${true} v=${g} label=${"Évaluation globale : " + c.t} onSet=${(v) => up({ cl: { ...cl, [c.id]: v } })} /></div>
+        ${gap && html`<${Msg} kind="warn">Votre évaluation globale (${g + 1}/4) s’écarte de la moyenne de vos objectifs (${fmt1(a)}/4). Ce décalage est intéressant à signaler aux formateurs : dites en quelques mots ce qui l’explique.<//>`}
+        <label className="small"><span className="lbl">Mes difficultés, mes questions (facultatif)</span><textarea className="ta" value=${se.notes[c.id] || ""} onInput=${(e) => up({ notes: { ...se.notes, [c.id]: e.target.value } })} placeholder="Ce qui reste flou, une situation clinique où j’hésite…"></textarea></label></div><//>`; })}
+    <${Frame} title="Objectifs opérationnels de la formation" hint="Je me sens capable de…">
+      <div className="objs">${OBJ_OP.map((o, j) => html`<div key=${j} className="obj"><span className="obj-t">${o}</span><${Scale} v=${ol[j]} label=${o} onSet=${(v) => up({ ol: { ...ol, [j]: v } })} /></div>`)}</div><//>
     <${Frame} title="Message aux formateurs">
       <label className="small"><span className="lbl">Retours, difficultés de mise en place, besoins (facultatif)</span><textarea className="ta" style=${{ minHeight: "110px" }} value=${se.general} onInput=${(e) => up({ general: e.target.value })} placeholder="Par exemple : la difficulté que je rencontre pour mettre en place RAPPEL avec un patient, une question à aborder lors d’une matinée…"></textarea></label>
       <div className="two"><label className="small"><span className="lbl">Nom et prénom (facultatif)</span><input className="inp" value=${se.name} onInput=${(e) => up({ name: e.target.value })} autocomplete="name" /></label>
         <label className="check" style=${{ alignSelf: "end" }}><input type="checkbox" checked=${se.attach} onChange=${(e) => up({ attach: e.target.checked })} /><span>Joindre la synthèse de mes résultats (questionnaire, quiz, modules, flashcards)</span></label></div><//>
     <${Frame} title="Envoyer à contact@apstraco.fr" hint="Rien n’est envoyé automatiquement">
+      ${done < total && html`<${Msg}>Il reste ${total - done} évaluation${total - done > 1 ? "s" : ""} à faire. Vous pouvez tout de même envoyer le message : les éléments manquants y figureront comme « non évalué ».<//>`}
       <pre className="mail" aria-label="Aperçu du message">${mail}</pre>
       <div className="row"><button className="btn primary" onClick=${doMail}><${I} n="mail" />Ouvrir dans ma messagerie</button><button className="btn" onClick=${doCopy}><${I} n="copy" />Copier le message</button></div>
       <p className="small muted">Si votre messagerie ne s’ouvre pas, copiez le message et collez-le dans un courriel à <b>${MAIL}</b>, objet « ${subject} ».</p><//>
