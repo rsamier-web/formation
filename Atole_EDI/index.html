@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atelier PIM · Formation EDI</title>
-<meta name="description" content="Deux applications pour apprendre à décomposer une tâche complexe en maximoi, minimoi et PIM, d’après le programme ATOLE.">
+<title>Applications ATOLE · Formation EDI</title>
+<meta name="description" content="Les applications de la formation EDI : réviser les notions du programme ATOLE, apprendre à décomposer une tâche complexe en maximoi, minimoi et PIM, et consulter une bibliothèque de PIM.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -96,6 +96,16 @@ mark{background:light-dark(#fdf0a8,#6b5b10);color:inherit;border-radius:2px}
 .path li p{margin:0;font-size:15px}
 .path li a{font-weight:600}
 
+/* Tuile large : Réviser ATOLE */
+.app.wide{grid-column:1/-1;flex-direction:row}
+.app.wide .preview{border-bottom:0;border-right:1px solid var(--line);flex:0 0 42%}
+.mock.rev{grid-template-columns:118px minmax(0,1fr)}
+.fcard{border:1px solid var(--line);border-radius:4px;background:var(--view);padding:10px;text-align:center;display:grid;gap:4px}
+.fcard b{font-size:13px}.fcard small{color:var(--mute);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.grades span{border:1px solid;border-radius:3px;font-size:9.5px;text-align:center;padding:2px 0}
+.grades span:nth-child(1){border-color:#da4453}.grades span:nth-child(2){border-color:#f67400}.grades span:nth-child(3){border-color:#27ae60}.grades span:nth-child(4){border-color:#3daee9}
+@media (max-width:860px){.app.wide{flex-direction:column}.app.wide .preview{border-right:0;border-bottom:1px solid var(--line)}}
+
 footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-size:14px;color:var(--mute);display:flex;flex-direction:column;gap:4px}
 
 @media (max-width:860px){.apps,.path ol{grid-template-columns:minmax(0,1fr)}}
@@ -105,15 +115,15 @@ footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-si
 <body>
 <header class="titlebar">
   <span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
-  <span><b>Atelier PIM</b><span class="sub"> · Formation EDI d’après le programme ATOLE</span></span>
+  <span><b>Formation EDI</b><span class="sub"> · Applications d’après le programme ATOLE</span></span>
 </header>
 
 <main>
   <section class="intro">
-    <p class="kicker">Deux applications, une compétence</p>
+    <p class="kicker">Les applications de la formation EDI</p>
     <h1>Décomposer une tâche complexe en maximoi, minimoi et PIM</h1>
     <p>Pour aider un apprenant à rester concentré, on découpe une tâche complexe : <b>Maximoi</b> fixe le but et les étapes, <b>minimoi</b> les réalise une à une. Pour chaque étape où l’apprenant risque d’échouer, un <b>PIM</b> lui dit où porter son attention et quoi faire.</p>
-    <p>La première application sert à <b>apprendre et s’entraîner</b> à cette décomposition. La seconde sert à <b>consulter, rechercher et adapter</b> des décompositions déjà rédigées.</p>
+    <p><b>Réviser ATOLE</b> reprend l’ensemble des notions de la formation et permet de <b>se situer</b>. <b>Décomposer</b> sert à <b>apprendre et s’entraîner</b> à la décomposition. La <b>Bibliothèque</b> sert à <b>consulter, rechercher et adapter</b> des décompositions déjà rédigées.</p>
     <ul class="pimline" aria-label="Les trois éléments d’un PIM">
       <li class="i"><b>Intention</b> · ce que je veux réussir</li>
       <li class="p"><b>Perception</b> · où je porte mon attention</li>
@@ -122,6 +132,34 @@ footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-si
   </section>
 
   <section class="apps" aria-label="Les applications">
+    <article class="app wide">
+      <div class="preview" aria-hidden="true">
+        <div class="mock rev">
+          <div class="side">
+            <span class="g">Apprendre</span><span>1 · Attention</span><span>2 · Personnages</span><span>3 · Fonctions exéc.</span><span>4 · PIM</span><span>5 · RAPPEL</span>
+            <span class="g">S’entraîner</span><span>Glossaire</span><span class="on">Flashcards</span><span>Quiz</span>
+            <span class="g">Se situer</span><span>Questionnaire</span><span>Auto-évaluation</span>
+          </div>
+          <div class="pane">
+            <div class="fcard"><small>Terme</small><b>Captivation</b><div class="bar" style="width:80%;margin:0 auto"></div><div class="bar" style="width:60%;margin:0 auto"></div></div>
+            <div class="grades"><span>À revoir</span><span>Difficile</span><span>Bien</span><span>Facile</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="app-body">
+        <h2>Réviser ATOLE</h2>
+        <p class="goal"><b>Objectif :</b> comprendre, mémoriser et vérifier toutes les notions nécessaires à un programme de psychoéducation et de remédiation cognitive de l’attention et des fonctions exécutives.</p>
+        <h3>Ce que vous y trouvez</h3>
+        <ul>
+          <li><b>Apprendre</b> : 7 modules courts (attention, personnages ATOLE et neurones, fonctions exécutives, Maximoi-minimoi-PIM, RAPPEL, émotions et mémoire, construction du programme) et un module sur la conception des supports.</li>
+          <li><b>S’entraîner</b> : un glossaire illustré d’exemples, des flashcards à répétition espacée sur le modèle d’Anki, un quiz par module avec correction détaillée.</li>
+          <li><b>Se situer</b> : un questionnaire de 41 affirmations sur l’attention avec les réponses attendues, puis une auto-évaluation des compétences à envoyer aux formateurs.</li>
+        </ul>
+        <p class="who">Pour : les participants de la formation, entre les matinées et après la formation.</p>
+        <a class="open" href="Reviser_ATOLE.html">Ouvrir « Réviser ATOLE »
+          <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </article>
     <article class="app">
       <div class="preview" aria-hidden="true">
         <div class="mock">
@@ -186,8 +224,8 @@ footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-si
   </section>
 
   <section class="path">
-    <h2>Utiliser les deux applications ensemble</h2>
-    <p>Un parcours conseillé pour passer de la découverte à la pratique :</p>
+    <h2>Utiliser les applications ensemble</h2>
+    <p>Un parcours conseillé pour passer de la découverte à la pratique. Commencez par les modules de <a href="Reviser_ATOLE.html">Réviser ATOLE</a> pour les notions, puis :</p>
     <ol>
       <li><b>Se former</b><p>Dans <a href="Decomposer_maximoi_minimoi_PIM.html">Décomposer</a>, lisez les notions, les pièges et la grille, puis faites les niveaux 1 à 4.</p></li>
       <li><b>S’inspirer</b><p>Dans la <a href="Bibliotheque_PIM.html">Bibliothèque</a>, cherchez une tâche proche de la vôtre et observez comment ses PIM sont rédigés.</p></li>
