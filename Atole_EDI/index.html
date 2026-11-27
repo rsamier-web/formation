@@ -106,6 +106,13 @@ mark{background:light-dark(#fdf0a8,#6b5b10);color:inherit;border-radius:2px}
 .grades span:nth-child(1){border-color:#da4453}.grades span:nth-child(2){border-color:#f67400}.grades span:nth-child(3){border-color:#27ae60}.grades span:nth-child(4){border-color:#3daee9}
 @media (max-width:860px){.app.wide{flex-direction:column}.app.wide .preview{border-right:0;border-bottom:1px solid var(--line)}}
 
+.res{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:18px;align-items:center;margin:36px 0 0;background:var(--view);border:1px solid var(--line);border-left:4px solid var(--hi);border-radius:6px;box-shadow:var(--sh);padding:18px 20px}
+.res img{width:72px;height:72px;object-fit:contain}
+.res h2{font-size:22px;line-height:1.2;margin:0 0 4px;font-weight:600}
+.res p{margin:0}
+.res .open{margin-top:0;align-self:center}
+@media (max-width:700px){.res{grid-template-columns:52px minmax(0,1fr)}.res img{width:52px;height:52px}.res .open{grid-column:1/-1}}
+
 footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-size:14px;color:var(--mute);display:flex;flex-direction:column;gap:4px}
 
 @media (max-width:860px){.apps,.path ol{grid-template-columns:minmax(0,1fr)}}
@@ -221,6 +228,16 @@ footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-si
           <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </article>
+  </section>
+
+  <section class="res" aria-labelledby="res-h">
+    <img src="img/maximoi.webp" alt="" width="72" height="72">
+    <div>
+      <h2 id="res-h">Les ressources ATOLE et ADOLE</h2>
+      <p>Tous les documents des kits ATOLE (2018) et ADOLE (2023) et les ressources ApStraCo : fiches des 10 séquences, vidéos d’introduction, affiches, outils de suivi, jeux et images, à consulter et à télécharger.</p>
+    </div>
+    <a class="open" href="Ressources.html">Voir les ressources
+      <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
   </section>
 
   <section class="path">
