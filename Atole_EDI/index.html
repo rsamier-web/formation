@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Applications ATOLE · Formation EDI</title>
-<meta name="description" content="Les applications de la formation EDI : réviser les notions du programme ATOLE, apprendre à décomposer une tâche complexe en maximoi, minimoi et PIM, et consulter une bibliothèque de PIM.">
+<title>Formation EDI · Attention et fonctions exécutives</title>
+<meta name="description" content="Les outils de la formation EDI sur la psychoéducation et la remédiation cognitive de l’attention et des fonctions exécutives, d’après le programme ATOLE : réviser les notions, s’entraîner à décomposer une tâche en maximoi, minimoi et PIM, s’inspirer d’une bibliothèque de PIM et télécharger les ressources ATOLE et ADOLE.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /*
-VOICE: sobre et pédagogique, comme une page d’accueil d’application KDE.
-IDEA: le lanceur d’applications de Plasma : deux grandes tuiles d’application, chacune avec son aperçu.
-PICTURE: un aperçu miniature de chaque application (parcours en niveaux ; liste et fiche I/P/M).
-COLOUR and TYPE: Breeze (#eff0f1, #fcfcfc, bleu #3daee9) et Breeze Dark ; Noto Sans ; codes I/P/M bleu, vert, orange.
-LAYOUT: barre de titre, introduction, deux tuiles côte à côte (empilées sous 760px), parcours conseillé, pied de page.
+VOICE: sobre et pédagogique, comme la page d’accueil d’une application KDE.
+IDEA: un lanceur Plasma : une barre d’outils Breeze, quatre cartes Kirigami de même trame, numérotées selon le parcours de la formation.
+PICTURE: un aperçu miniature de chaque outil (cours et flashcards ; niveaux et trame PIM ; liste et fiche ; gestionnaire de fichiers).
+COLOUR and TYPE: Breeze (#eff0f1, #fcfcfc, bleu #3daee9) et Breeze Dark ; Noto Sans ; codes I/P/M bleu, vert, orange, partagés par toutes les applications.
+LAYOUT: barre d’outils, introduction et parcours en 4 étapes, 4 cartes (2 × 2, empilées sous 860px), vocabulaire commun, pied de page.
 */
 :root{color-scheme:light dark;
 --win:light-dark(#eff0f1,#2a2e32);--view:light-dark(#fcfcfc,#1b1e20);--alt:light-dark(#f4f5f6,#232629);
@@ -22,41 +22,60 @@ LAYOUT: barre de titre, introduction, deux tuiles côte à côte (empilées sous
 --hi:#3daee9;--hi-ink:light-dark(#1d6fa0,#7fcef5);--hi-bg:light-dark(#dff2fc,#1c3a4d);--title:light-dark(#dee0e2,#31363b);
 --ci:#3daee9;--cp:#27ae60;--cm:#f67400;
 --ci-bg:light-dark(#e3f4fc,#16303f);--cp-bg:light-dark(#e2f5ea,#16301f);--cm-bg:light-dark(#fdeee0,#3a2410);
+--k-pdf:light-dark(#c0392b,#ff8a80);--k-video:light-dark(#8e44ad,#d7a6ef);
 --r:4px;--sh:0 1px 2px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.06)}
-:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--win);color:var(--ink);font:16px/1.55 "Noto Sans","Segoe UI",Ubuntu,"Helvetica Neue",Arial,sans-serif;overflow-x:clip}
 a{color:var(--hi-ink)}
 :focus-visible{outline:2px solid var(--hi);outline-offset:2px}
 .ico{flex:none;vertical-align:-3px}
 
-.titlebar{display:flex;align-items:center;gap:10px;padding:10px max(4vw,16px);background:var(--title);border-bottom:1px solid var(--line);font-size:15px}
+/* Barre d’outils Breeze */
+.titlebar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;padding:6px max(4vw,16px);min-height:48px;background:var(--title);border-bottom:1px solid var(--line);font-size:15px}
+.brand{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none;margin-right:auto}
 .logo{display:grid;grid-template-columns:repeat(3,6px);gap:2px;align-items:end}
 .logo i{display:block;width:6px;border-radius:1px}.logo i:nth-child(1){height:9px;background:var(--ci)}.logo i:nth-child(2){height:14px;background:var(--cp)}.logo i:nth-child(3){height:19px;background:var(--cm)}
-.titlebar .sub{color:var(--mute)}
+.brand .sub{color:var(--mute)}
+.tb{display:flex;gap:2px;margin:0;padding:0;list-style:none}
+.tb a{display:flex;align-items:center;gap:6px;padding:6px 10px;min-height:36px;border-radius:var(--r);border:1px solid transparent;color:var(--ink);text-decoration:none;font-size:14px}
+.tb a:hover{background:var(--hi-bg);border-color:var(--hi)}
 
 main{max-width:1180px;margin:0 auto;padding:clamp(24px,4vw,48px) max(4vw,16px) 40px}
-.intro{max-width:760px}
+
+/* Introduction */
+.intro{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:start}
 .kicker{font-size:13px;font-weight:600;color:var(--hi-ink);margin:0 0 6px}
 h1{font-size:clamp(30px,4vw,44px);line-height:1.08;margin:0 0 14px;font-weight:600;text-wrap:balance}
 .intro p{margin:0 0 10px;font-size:17px}
-.pimline{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
-.pimline li{display:flex;align-items:center;gap:6px;font-size:14px;border-radius:var(--r);padding:4px 10px;border-left:3px solid}
-.pimline .i{background:var(--ci-bg);border-color:var(--ci)}.pimline .p{background:var(--cp-bg);border-color:var(--cp)}.pimline .m{background:var(--cm-bg);border-color:var(--cm)}
+.route{margin:0;padding:0;list-style:none;background:var(--view);border:1px solid var(--line);border-radius:6px;box-shadow:var(--sh);counter-reset:s}
+.route li{counter-increment:s;border-top:1px solid var(--line)}
+.route li:first-child{border-top:0}
+.route a{display:grid;grid-template-columns:30px minmax(0,1fr) 16px;gap:12px;align-items:center;padding:12px 14px;color:var(--ink);text-decoration:none}
+.route a:hover{background:var(--hi-bg)}
+.route a::before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--hi);color:#fff;font-weight:700;font-size:14px}
+.route b{display:block;font-weight:600;line-height:1.3}
+.route small{display:block;color:var(--mute);font-size:14px;line-height:1.35}
+.route .ico{color:var(--mute)}
+.route-h{font-size:13px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px}
 
-.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:36px 0 0}
-.app{background:var(--view);border:1px solid var(--line);border-radius:6px;box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden}
-.preview{background:var(--alt);border-bottom:1px solid var(--line);padding:18px;min-height:210px;display:flex;align-items:center;justify-content:center}
-.app-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* Cartes des outils */
+.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:40px 0 0}
+.app{background:var(--view);border:1px solid var(--line);border-radius:6px;box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden;scroll-margin-top:64px}
+.preview{background:var(--alt);border-bottom:1px solid var(--line);padding:18px;min-height:260px;display:flex;align-items:center;justify-content:center}
+.app-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.step{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;font-weight:700;color:var(--hi-ink)}
+.step span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--hi);color:#fff;font-size:12px}
 .app h2{font-size:24px;line-height:1.2;margin:0;font-weight:600}
 .goal{margin:0;font-size:17px}
-.app h3{font-size:13px;font-weight:700;color:var(--mute);margin:4px 0 0}
+.app h3{font-size:13px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 0}
 .app ul{margin:0;padding-left:20px}.app li{margin:3px 0}
-.who{margin:0;font-size:14px;color:var(--mute)}
+.when{margin:4px 0 0;padding:8px 12px;font-size:14.5px;background:var(--alt);border-left:3px solid var(--hi);border-radius:var(--r)}
 .open{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 18px;border-radius:var(--r);background:var(--hi);color:#fff;text-decoration:none;font-weight:600}
 .open:hover{filter:brightness(1.05);box-shadow:0 0 0 3px var(--hi-bg)}
+.app-body .when{margin-top:auto}
+.app-body .open{margin-top:4px}
 
-/* Aperçu : Décomposer */
+/* Aperçus */
 .mock{width:100%;max-width:420px;background:var(--view);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);display:grid;grid-template-columns:120px minmax(0,1fr);overflow:hidden;font-size:12px}
 .mock .side{background:var(--win);border-right:1px solid var(--line);padding:8px 6px;display:flex;flex-direction:column;gap:3px}
 .mock .side span{padding:3px 6px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -73,8 +92,11 @@ h1{font-size:clamp(30px,4vw,44px);line-height:1.08;margin:0 0 14px;font-weight:6
 .row3 b{font-size:10px;width:62px;flex:none}
 .row3 .bar{flex:1;height:6px;opacity:.7}
 .btnmock{align-self:flex-start;background:var(--hi);color:#fff;border-radius:3px;padding:3px 8px;font-size:11px;font-weight:600}
-
-/* Aperçu : Bibliothèque */
+.mock.rev{grid-template-columns:118px minmax(0,1fr)}
+.fcard{border:1px solid var(--line);border-radius:4px;background:var(--view);padding:10px;text-align:center;display:grid;gap:4px}
+.fcard b{font-size:13px}.fcard small{color:var(--mute);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.grades span{border:1px solid;border-radius:3px;font-size:9.5px;text-align:center;padding:2px 0}
+.grades span:nth-child(1){border-color:#da4453}.grades span:nth-child(2){border-color:#f67400}.grades span:nth-child(3){border-color:#27ae60}.grades span:nth-child(4){border-color:#3daee9}
 .mock.lib{grid-template-columns:130px minmax(0,1fr)}
 .search{grid-column:1/-1;display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--win)}
 .search span{flex:1;background:var(--view);border:1px solid var(--hi);border-radius:3px;padding:2px 8px}
@@ -85,65 +107,77 @@ mark{background:light-dark(#fdf0a8,#6b5b10);color:inherit;border-radius:2px}
 .list small{display:block;color:var(--mute);font-size:10px}
 .steps{display:flex;gap:4px}.steps i{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--line);font-size:9px;font-style:normal;font-weight:700;color:var(--mute)}
 .steps i.on{background:var(--hi);border-color:var(--hi);color:#fff}
+/* Aperçu : Ressources (gestionnaire de fichiers) */
+.mock.files{grid-template-columns:128px minmax(0,1fr)}
+.files .side span::before{content:"";display:inline-block;width:10px;height:8px;margin-right:5px;border:1.5px solid currentColor;border-radius:1px;vertical-align:-1px;opacity:.7}
+.frow{display:flex;align-items:center;gap:6px;padding:4px 6px;border-bottom:1px solid var(--line)}
+.frow:last-child{border-bottom:0}
+.frow i{width:14px;height:16px;border:1.5px solid;border-radius:2px;flex:none}
+.frow i.pdf{color:var(--k-pdf)}.frow i.vid{color:var(--k-video);width:16px;height:12px}
+.frow span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frow em{font-style:normal;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;border:1px solid var(--line);color:var(--hi-ink)}
+.frow em.go{background:var(--hi);border-color:var(--hi);color:#fff}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-top:4px}
+.thumbs i{height:30px;border-radius:2px;border:1px solid var(--line);background:linear-gradient(135deg,var(--ci-bg),var(--cp-bg))}
+.thumbs i:nth-child(2){background:linear-gradient(135deg,var(--cm-bg),var(--ci-bg))}.thumbs i:nth-child(3){background:linear-gradient(135deg,var(--cp-bg),var(--cm-bg))}
 
-.path{margin:44px 0 0}
-.path h2{font-size:26px;margin:0 0 6px;font-weight:600}
-.path > p{margin:0 0 18px;max-width:70ch}
-.path ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:s}
-.path li{background:var(--view);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;counter-increment:s;position:relative}
-.path li::before{content:counter(s);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--hi);color:#fff;font-weight:700;font-size:14px;margin-bottom:8px}
-.path li b{display:block;font-size:17px;margin-bottom:4px}
-.path li p{margin:0;font-size:15px}
-.path li a{font-weight:600}
-
-/* Tuile large : Réviser ATOLE */
-.app.wide{grid-column:1/-1;flex-direction:row}
-.app.wide .preview{border-bottom:0;border-right:1px solid var(--line);flex:0 0 42%}
-.mock.rev{grid-template-columns:118px minmax(0,1fr)}
-.fcard{border:1px solid var(--line);border-radius:4px;background:var(--view);padding:10px;text-align:center;display:grid;gap:4px}
-.fcard b{font-size:13px}.fcard small{color:var(--mute);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
-.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.grades span{border:1px solid;border-radius:3px;font-size:9.5px;text-align:center;padding:2px 0}
-.grades span:nth-child(1){border-color:#da4453}.grades span:nth-child(2){border-color:#f67400}.grades span:nth-child(3){border-color:#27ae60}.grades span:nth-child(4){border-color:#3daee9}
-@media (max-width:860px){.app.wide{flex-direction:column}.app.wide .preview{border-right:0;border-bottom:1px solid var(--line)}}
-
-.res{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:18px;align-items:center;margin:36px 0 0;background:var(--view);border:1px solid var(--line);border-left:4px solid var(--hi);border-radius:6px;box-shadow:var(--sh);padding:18px 20px}
-.res img{width:72px;height:72px;object-fit:contain}
-.res h2{font-size:22px;line-height:1.2;margin:0 0 4px;font-weight:600}
-.res p{margin:0}
-.res .open{margin-top:0;align-self:center}
-@media (max-width:700px){.res{grid-template-columns:52px minmax(0,1fr)}.res img{width:52px;height:52px}.res .open{grid-column:1/-1}}
+/* Vocabulaire commun */
+.vocab{margin:44px 0 0}
+.vocab h2,.sec-h{font-size:26px;margin:0 0 6px;font-weight:600}
+.vocab > p{margin:0 0 16px;max-width:75ch}
+.terms{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}
+.terms li{background:var(--view);border:1px solid var(--line);border-top:3px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.terms b{display:block;font-size:17px;margin-bottom:2px}
+.terms span{font-size:14.5px}
+.terms .mx{border-top-color:var(--hi)}.terms .mn{border-top-color:var(--mute)}
+.terms .i{border-top-color:var(--ci);background:var(--ci-bg)}.terms .p{border-top-color:var(--cp);background:var(--cp-bg)}.terms .m{border-top-color:var(--cm);background:var(--cm-bg)}
 
 footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-size:14px;color:var(--mute);display:flex;flex-direction:column;gap:4px}
 
-@media (max-width:860px){.apps,.path ol{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:600px){.titlebar .sub{display:none}.preview{padding:12px;min-height:0}.mock{grid-template-columns:96px minmax(0,1fr)}.mock.lib{grid-template-columns:110px minmax(0,1fr)}.intro p{font-size:16px}}
+@media (max-width:960px){.terms{grid-template-columns:repeat(2,minmax(0,1fr))}.terms .mx{grid-column:1/-1}}
+@media (max-width:860px){.intro,.apps{grid-template-columns:minmax(0,1fr)}.tb .lbl{display:none}}
+@media (max-width:600px){.titlebar{position:static}.brand .sub{display:none}.preview{padding:12px;min-height:0}.mock{grid-template-columns:96px minmax(0,1fr)}.mock.lib,.mock.files{grid-template-columns:110px minmax(0,1fr)}.intro p{font-size:16px}.terms{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
 <header class="titlebar">
-  <span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
-  <span><b>Formation EDI</b><span class="sub"> · Applications d’après le programme ATOLE</span></span>
+  <a class="brand" href="index.html"><span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span><b>Formation EDI</b><span class="sub"> · Attention et fonctions exécutives</span></span></a>
+  <nav aria-label="Les outils">
+    <ul class="tb">
+      <li><a href="Reviser_ATOLE.html" title="Réviser ATOLE"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3.5h4.5A1.5 1.5 0 0 1 8 5v8a1.5 1.5 0 0 0-1.5-1.5H2zM14 3.5H9.5A1.5 1.5 0 0 0 8 5v8a1.5 1.5 0 0 1 1.5-1.5H14z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="lbl">Réviser</span></a></li>
+      <li><a href="Decomposer_maximoi_minimoi_PIM.html" title="Décomposer une tâche complexe"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M5 8h9M8 13h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="2.5" cy="8" r="1" fill="currentColor"/><circle cx="5.5" cy="13" r="1" fill="currentColor"/></svg><span class="lbl">Décomposer</span></a></li>
+      <li><a href="Bibliotheque_PIM.html" title="Bibliothèque PIM"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 2.5h3v11h-3zM6.5 2.5h3v11h-3zM10.5 3.2l2.6-.7 2.4 10.6-2.6.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="lbl">Bibliothèque</span></a></li>
+      <li><a href="Ressources.html" title="Ressources ATOLE et ADOLE"><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 4V13h13V5.5H8L6.5 3.5h-5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="lbl">Ressources</span></a></li>
+    </ul>
+  </nav>
 </header>
 
 <main>
   <section class="intro">
-    <p class="kicker">Les applications de la formation EDI</p>
-    <h1>Décomposer une tâche complexe en maximoi, minimoi et PIM</h1>
-    <p>Pour aider un apprenant à rester concentré, on découpe une tâche complexe : <b>Maximoi</b> fixe le but et les étapes, <b>minimoi</b> les réalise une à une. Pour chaque étape où l’apprenant risque d’échouer, un <b>PIM</b> lui dit où porter son attention et quoi faire.</p>
-    <p><b>Réviser ATOLE</b> reprend l’ensemble des notions de la formation et permet de <b>se situer</b>. <b>Décomposer</b> sert à <b>apprendre et s’entraîner</b> à la décomposition. La <b>Bibliothèque</b> sert à <b>consulter, rechercher et adapter</b> des décompositions déjà rédigées.</p>
-    <ul class="pimline" aria-label="Les trois éléments d’un PIM">
-      <li class="i"><b>Intention</b> · ce que je veux réussir</li>
-      <li class="p"><b>Perception</b> · où je porte mon attention</li>
-      <li class="m"><b>Manière d’agir</b> · la seule action à faire</li>
-    </ul>
+    <div>
+      <p class="kicker">ApStraCo · Formation EDI</p>
+      <h1>Les outils de la formation EDI</h1>
+      <p>La formation porte sur la <b>psychoéducation</b> et la <b>remédiation cognitive</b> de l’attention et des fonctions exécutives, d’après le programme ATOLE de l’Inserm.</p>
+      <p>Cette page rassemble les quatre outils qui l’accompagnent : trois applications pour <b>réviser</b>, <b>s’entraîner</b> et <b>s’inspirer</b>, et les <b>ressources</b> des kits ATOLE et ADOLE. Ils s’utilisent dans le navigateur, pendant la formation et après.</p>
+    </div>
+    <div>
+      <p class="route-h">Le parcours conseillé</p>
+      <ol class="route">
+        <li><a href="#reviser"><span><b>Comprendre et se situer</b><small>Réviser ATOLE : les notions, puis l’auto-évaluation</small></span><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+        <li><a href="#decomposer"><span><b>S’entraîner à décomposer</b><small>Décomposer : des exemples à la trame vide</small></span><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+        <li><a href="#bibliotheque"><span><b>S’inspirer et produire</b><small>Bibliothèque PIM : adapter une fiche, obtenir un retour</small></span><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+        <li><a href="#ressources"><span><b>Mettre en œuvre en classe</b><small>Ressources : séquences, affiches, vidéos, jeux</small></span><svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+      </ol>
+    </div>
   </section>
 
-  <section class="apps" aria-label="Les applications">
-    <article class="app wide">
+  <section class="apps" aria-label="Les outils">
+    <article class="app" id="reviser">
       <div class="preview" aria-hidden="true">
         <div class="mock rev">
           <div class="side">
-            <span class="g">Apprendre</span><span>1 · Attention</span><span>2 · Personnages</span><span>3 · Fonctions exéc.</span><span>4 · PIM</span><span>5 · RAPPEL</span>
+            <span class="g">Apprendre</span><span>1 · Attention</span><span>2 · Personnages</span><span>3 · Fonctions exéc.</span><span>4 · PIM</span>
             <span class="g">S’entraîner</span><span>Glossaire</span><span class="on">Flashcards</span><span>Quiz</span>
             <span class="g">Se situer</span><span>Questionnaire</span><span>Auto-évaluation</span>
           </div>
@@ -154,20 +188,22 @@ footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-si
         </div>
       </div>
       <div class="app-body">
+        <p class="step"><span>1</span>Comprendre et se situer</p>
         <h2>Réviser ATOLE</h2>
-        <p class="goal"><b>Objectif :</b> comprendre, mémoriser et vérifier toutes les notions nécessaires à un programme de psychoéducation et de remédiation cognitive de l’attention et des fonctions exécutives.</p>
+        <p class="goal"><b>Objectif :</b> comprendre, mémoriser et vérifier les notions nécessaires à un programme de psychoéducation et de remédiation de l’attention et des fonctions exécutives.</p>
         <h3>Ce que vous y trouvez</h3>
         <ul>
-          <li><b>Apprendre</b> : 7 modules courts (attention, personnages ATOLE et neurones, fonctions exécutives, Maximoi-minimoi-PIM, RAPPEL, émotions et mémoire, construction du programme) et un module sur la conception des supports.</li>
-          <li><b>S’entraîner</b> : un glossaire illustré d’exemples, des flashcards à répétition espacée sur le modèle d’Anki, un quiz par module avec correction détaillée.</li>
-          <li><b>Se situer</b> : un questionnaire de 40 affirmations sur l’attention avec les réponses attendues, puis une auto-évaluation des compétences à envoyer aux formateurs.</li>
+          <li><b>Apprendre :</b> 7 modules courts (attention, personnages ATOLE et neurones, fonctions exécutives, maximoi, minimoi et PIM, RAPPEL, émotions et mémoire, construction du programme) et un module sur la conception des supports.</li>
+          <li><b>S’entraîner :</b> un glossaire illustré, des flashcards à répétition espacée, un quiz par module avec correction détaillée.</li>
+          <li><b>Se situer :</b> un questionnaire sur l’attention avec les réponses attendues, puis une auto-évaluation des compétences à envoyer aux formateurs.</li>
         </ul>
-        <p class="who">Pour : les participants de la formation, entre les matinées et après la formation.</p>
+        <p class="when"><b>Quand l’utiliser :</b> entre les sessions et après la formation.</p>
         <a class="open" href="Reviser_ATOLE.html">Ouvrir « Réviser ATOLE »
           <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </article>
-    <article class="app">
+
+    <article class="app" id="decomposer">
       <div class="preview" aria-hidden="true">
         <div class="mock">
           <div class="side">
@@ -183,21 +219,22 @@ footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-si
         </div>
       </div>
       <div class="app-body">
+        <p class="step"><span>2</span>S’entraîner à décomposer</p>
         <h2>Décomposer une tâche complexe</h2>
         <p class="goal"><b>Objectif :</b> acquérir pas à pas la compétence de décomposition, de la compréhension des notions jusqu’à une décomposition rédigée seul.</p>
         <h3>Ce que vous y trouvez</h3>
         <ul>
-          <li><b>Apprendre</b> : les notions en fiches courtes, un glossaire, un quiz, les 5 pièges fréquents et la grille des 5 questions pour tester un PIM.</li>
-          <li><b>S’entraîner</b> en 5 niveaux de difficulté croissante : étudier des exemples résolus, remettre des minimoi dans l’ordre, corriger des PIM erronés, compléter des PIM, puis décomposer seul une tâche dans une trame vide.</li>
-          <li>Un prompt à copier pour obtenir le retour d’une IA générative sur sa production.</li>
+          <li><b>Apprendre :</b> les notions en fiches courtes, un glossaire, un quiz, les 5 pièges fréquents et la grille des 5 questions pour tester un PIM.</li>
+          <li><b>S’entraîner</b> en 5 niveaux : étudier des exemples résolus, remettre des minimoi dans l’ordre, corriger des PIM, compléter des PIM, puis décomposer seul une tâche dans une trame vide.</li>
+          <li><b>Obtenir un retour :</b> un prompt à copier dans l’IA générative de votre choix.</li>
         </ul>
-        <p class="who">Pour : les participants de la formation et toute personne qui découvre les PIM.</p>
+        <p class="when"><b>Quand l’utiliser :</b> avant de rédiger vos propres PIM, en suivant les niveaux 1 à 5 dans l’ordre.</p>
         <a class="open" href="Decomposer_maximoi_minimoi_PIM.html">Ouvrir « Décomposer »
           <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </article>
 
-    <article class="app">
+    <article class="app" id="bibliotheque">
       <div class="preview" aria-hidden="true">
         <div class="mock lib">
           <div class="search">⌕ <span><mark>petit film</mark></span></div>
@@ -214,44 +251,68 @@ footer{border-top:1px solid var(--line);margin-top:44px;padding-top:16px;font-si
         </div>
       </div>
       <div class="app-body">
+        <p class="step"><span>3</span>S’inspirer et produire</p>
         <h2>Bibliothèque PIM</h2>
-        <p class="goal"><b>Objectif :</b> retrouver rapidement une tâche déjà décomposée, s’en inspirer et l’adapter à son apprenant.</p>
+        <p class="goal"><b>Objectif :</b> retrouver une tâche déjà décomposée, s’en inspirer et l’adapter à son apprenant.</p>
         <h3>Ce que vous y trouvez</h3>
         <ul>
-          <li>45 décompositions rédigées par des enseignants et des professionnels, de la maternelle au lycée : lecture, écriture, mathématiques, sciences, motricité, autonomie, vie quotidienne…</li>
-          <li>Une recherche dans tout le contenu ou seulement dans l’Intention, la Perception ou la Manière d’agir, et des filtres par domaine et par public.</li>
-          <li>Deux lectures : le plan de toute la tâche, ou un minimoi à la fois en pas à pas.</li>
-          <li>Une trame vide, avec le bouton « Adapter » pour partir d’une fiche existante, et un prompt de feed-back à copier.</li>
+          <li><b>Consulter :</b> 45 décompositions rédigées par des enseignants et des professionnels, de la maternelle au lycée, à lire en plan ou en pas à pas.</li>
+          <li><b>Rechercher :</b> dans tout le contenu ou seulement dans l’Intention, la Perception ou la Manière d’agir, avec des filtres par domaine et par public.</li>
+          <li><b>Produire :</b> une trame vide, le bouton « Adapter » pour partir d’une fiche existante et un prompt de feed-back à copier.</li>
         </ul>
-        <p class="who">Pour : les enseignants et les professionnels qui préparent des PIM pour leurs élèves ou leurs patients.</p>
+        <p class="when"><b>Quand l’utiliser :</b> quand vous préparez des PIM pour vos élèves ou vos patients.</p>
         <a class="open" href="Bibliotheque_PIM.html">Ouvrir la Bibliothèque
+          <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </article>
+
+    <article class="app" id="ressources">
+      <div class="preview" aria-hidden="true">
+        <div class="mock files">
+          <div class="side">
+            <span class="g">Dossiers</span><span>01 · Découvrir</span><span class="on">02 · Séquences</span><span>03 · Matériel</span><span>04 · ADOLE 2023</span><span>05 · ApStraCo</span>
+          </div>
+          <div class="pane">
+            <div class="frow"><i class="pdf"></i><span>Fiche pédagogique</span><em>Télécharger</em></div>
+            <div class="frow"><i class="pdf"></i><span>Images à projeter</span><em>Télécharger</em></div>
+            <div class="frow"><i class="vid"></i><span>Vidéo d’introduction</span><em class="go">Regarder</em></div>
+            <div class="thumbs"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="app-body">
+        <p class="step"><span>4</span>Mettre en œuvre en classe</p>
+        <h2>Ressources ATOLE et ADOLE</h2>
+        <p class="goal"><b>Objectif :</b> disposer de tous les documents nécessaires pour mettre en place le programme avec ses élèves.</p>
+        <h3>Ce que vous y trouvez</h3>
+        <ul>
+          <li><b>Le kit ATOLE (2018) :</b> les documents de présentation, les 10 séquences avec fiche, images, vidéo d’introduction et vignettes, les affiches et les outils de suivi.</li>
+          <li><b>Le kit ADOLE (2023) :</b> le carnet d’accompagnement, les fiches, les médias et les affiches.</li>
+          <li><b>Les ressources ApStraCo :</b> des jeux, des PIM pour des jeux de société et des images à réutiliser.</li>
+        </ul>
+        <p class="when"><b>Quand l’utiliser :</b> pour préparer vos séances. Recherche par mot-clé, vidéos lisibles dans la page, tout téléchargeable.</p>
+        <a class="open" href="Ressources.html">Voir les ressources
           <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </article>
   </section>
 
-  <section class="res" aria-labelledby="res-h">
-    <img src="img/maximoi.webp" alt="" width="72" height="72">
-    <div>
-      <h2 id="res-h">Les ressources ATOLE et ADOLE</h2>
-      <p>Tous les documents des kits ATOLE (2018) et ADOLE (2023) et les ressources ApStraCo : fiches des 10 séquences, vidéos d’introduction, affiches, outils de suivi, jeux et images, à consulter et à télécharger.</p>
-    </div>
-    <a class="open" href="Ressources.html">Voir les ressources
-      <svg class="ico" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  </section>
-
-  <section class="path">
-    <h2>Utiliser les applications ensemble</h2>
-    <p>Un parcours conseillé pour passer de la découverte à la pratique. Commencez par les modules de <a href="Reviser_ATOLE.html">Réviser ATOLE</a> pour les notions, puis :</p>
-    <ol>
-      <li><b>Se former</b><p>Dans <a href="Decomposer_maximoi_minimoi_PIM.html">Décomposer</a>, lisez les notions, les pièges et la grille, puis faites les niveaux 1 à 4.</p></li>
-      <li><b>S’inspirer</b><p>Dans la <a href="Bibliotheque_PIM.html">Bibliothèque</a>, cherchez une tâche proche de la vôtre et observez comment ses PIM sont rédigés.</p></li>
-      <li><b>Produire et obtenir un retour</b><p>Rédigez votre décomposition dans une trame vide, puis copiez le prompt et collez-le dans l’IA générative de votre choix pour l’améliorer.</p></li>
-    </ol>
+  <section class="vocab" aria-labelledby="vocab-h">
+    <h2 id="vocab-h">Le vocabulaire commun</h2>
+    <p>Les quatre outils emploient les mêmes notions, issues du programme ATOLE. Pour aider un apprenant à rester concentré, on décompose une tâche complexe :</p>
+    <ul class="terms">
+      <li class="mx"><b>Maximoi</b><span>fixe le but et les étapes de la tâche.</span></li>
+      <li class="mn"><b>Minimoi</b><span>réalise les étapes une à une.</span></li>
+      <li class="i"><b>Intention</b><span>ce que je veux réussir.</span></li>
+      <li class="p"><b>Perception</b><span>où je porte mon attention.</span></li>
+      <li class="m"><b>Manière d’agir</b><span>la seule action à faire.</span></li>
+    </ul>
+    <p style="margin:12px 0 0;max-width:75ch">Pour chaque étape où l’apprenant risque d’échouer, un <b>PIM</b> (Perception, Intention, Manière d’agir) lui dit où porter son attention et quoi faire.</p>
   </section>
 
   <footer>
-    <span>Démarche inspirée du programme <a href="https://project.crnl.fr/atole/">ATOLE</a> (Jean-Philippe Lachaux, Inserm).</span>
+    <span>Formation EDI : ApStraCo – Rémi Samier et Sylvie Jacques. Contact : <a href="mailto:contact@apstraco.fr">contact@apstraco.fr</a>.</span>
+    <span>Démarche inspirée du programme <a href="https://project.crnl.fr/atole/">ATOLE</a> (Jean-Philippe Lachaux, Inserm). Kits ATOLE et ADOLE : équipe ATOLE de l’Inserm.</span>
     <span>Fiches de la bibliothèque : Rémi Samier, Sylvie Jacques et leurs co-auteurs, licence Creative Commons CC BY-SA 4.0.</span>
   </footer>
 </main>
