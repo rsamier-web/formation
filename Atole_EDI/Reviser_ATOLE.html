@@ -110,6 +110,7 @@ ul.list, ol.list { margin: 0; padding-left: 22px; display: grid; gap: 5px; max-w
 .withside { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: start; }
 .fig { margin: 0; display: grid; gap: 4px; justify-items: center; text-align: center; }
 .fig img { display: block; max-width: 100%; height: auto; background: var(--imgbg); border-radius: var(--r); }
+.fig img[src*="schema-"] { padding: 10px; border: 1px solid var(--line); background: #FFFFFF; box-sizing: border-box; }
 .fig figcaption { font-size: 12.5px; color: var(--ink-3); max-width: 60ch; }
 .figrow { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; align-items: end; }
 .figrow .fig img { max-height: 170px; width: auto; }
@@ -212,7 +213,8 @@ table.tbl { border-collapse: collapse; width: 100%; font-size: 14px; }
 .rl { display: grid; gap: 2px; padding: 8px; border: 1px solid var(--line); border-radius: var(--r); text-align: center; background: var(--view-alt); }
 .rl .L { font-size: 26px; font-weight: 700; line-height: 1; }
 .rl b { font-size: 13.5px; } .rl span { font-size: 12px; color: var(--ink-3); }
-.rl.ext { border-top: 3px solid var(--accent); } .rl.int { border-top: 3px solid var(--kP); } .rl.lp { border-top: 3px solid var(--good); }
+:root { --rx: #EEA81E; --ri: #E87722; --rl: #00936E; }
+.rl.ext { border-top: 3px solid var(--rx); } .rl.int { border-top: 3px solid var(--ri); } .rl.lp { border-top: 3px solid var(--rl); }
 .rappel-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); }
 .rappel-legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 .cine { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
@@ -404,7 +406,13 @@ const MODULES = [
     ]},
     { h: "Qui tire sur l’attention ?", body: [
       "Les ressources attentionnelles et la mémoire de travail sont limitées. Plusieurs réseaux tirent donc sur l’attention pour prendre le contrôle de la conscience.",
-      { visual: "forces" },
+      { img: "schema-reseaux-attention", cap: "Les réseaux qui tirent sur l’attention : un processus volontaire et des processus automatiques", w: 760 },
+      { ul: [
+        "**Système de détection** : attire l’attention, par réflexe, vers ce qui est saillant (forme, mouvement, couleur, bruit, odeur).",
+        "**Pilotage automatique** : propose des actions selon les habitudes liées au contexte.",
+        "**Pensées automatiques** : fait surgir des pensées, c’est le vagabondage de l’esprit.",
+        "**Désirs et aversions** : oriente vers le plaisir et signale le déplaisir, les erreurs (neurone aimant)."
+      ]},
       "Le **système stratégique** arbitre entre les sollicitations, fixe l’objectif et le plan. Il stabilise l’attention et dépend de la **motivation** : sans motivation, l’attention est tirée dans tous les sens par les processus automatiques."
     ]},
     { h: "Les cycles perception-action", body: [
@@ -420,10 +428,11 @@ const MODULES = [
     ]},
     { h: "La poutre attentionnelle", body: [
       "Agir avec attention, c’est d’abord définir son objectif. Toute tâche peut être vue comme une **poutre à traverser** pour l’atteindre. Évaluer la poutre avant de la franchir permet d’ajuster son niveau d’attention, sa vitesse et sa précision.",
-      { visual: "poutre" },
+      { img: "schema-poutre", cap: "La poutre attentionnelle : longueur, hauteur, largeur ; un PAM peut provoquer un changement rapide d’intention (CRI)", w: 760 },
       { seance: "Le pâtissier : poser des décorations = poutres courtes ; pocher une ganache sur tout le tour du gâteau = poutre longue. S’entraîner chez soi = poutre basse ; la finale d’un concours = poutre haute. Éplucher des pommes = poutre large ; couper un citron en tranches fines = poutre étroite." }
     ]},
     { h: "Les 3 A : trois niveaux de continuité du contact", body: [
+      { img: "schema-3a", cap: "Les 3 A : la continuité de l’attention sur la cible", w: 520 },
       { visual: "troisA" },
       "Les 3 A ne mesurent pas un **effort** ni une crispation, mais la **continuité du contact** avec la cible. La qualité de l’attention, c’est le pourcentage de temps passé en contact avec la bonne cible.",
       "Mieux gérer son attention, c’est un travail **d’équilibriste, pas d’haltérophile** : identifier la bonne cible et maintenir le contact.",
@@ -501,7 +510,7 @@ const MODULES = [
     { h: "Un système en toile d’araignée", body: [
       "Les fonctions exécutives permettent des **actions et des comportements dirigés vers un objectif**. Elles regroupent l’attention, la **mémoire de travail**, l’**inhibition**, la **planification** et la **flexibilité**.",
       "Ces processus sont indépendants mais reliés : comme dans une **toile d’araignée**, si un élément est touché, toute la toile bouge. Elles sont au carrefour des fonctions sensorimotrices, émotionnelles et cognitives.",
-      { img: "neurone-chef", cap: "Le neurone chef représente les fonctions exécutives", w: 130, side: true }
+      { img: "schema-fonctions-executives", cap: "Les fonctions exécutives et la motivation qui les alimente", w: 640 }
     ]},
     { h: "Deux systèmes : le PDG et son assistant", body: [
       { visual: "systemes" },
@@ -577,8 +586,9 @@ const MODULES = [
     ]},
     { h: "Le PIM, un programme attentionnel", body: [
       "Pour qu’une mini-mission soit efficace, on définit un **programme attentionnel** simple : le **PIM**.",
-      { visual: "pimdef" },
-      "L’objectif suit la **règle des 3 C** : clair, concret, concis. La Manière d’agir décrit **une seule action**. Dans certains documents ATOLE, elle s’appelle **Mode d’action**."
+      { img: "schema-pim-cerveau", cap: "Le PIM dans le cerveau : Intention (neurone chef), Perception (neurone perception), Mode d’action (neurone action)", w: 800 },
+      "L’objectif suit la **règle des 3 C** : clair, concret, concis. La Manière d’agir décrit **une seule action**. Dans certains documents ATOLE, elle s’appelle **Mode d’action**, comme sur ce schéma.",
+      "Une cible ou une action peut être **simple** ou **complexe** : les cibles et les actions complexes **nécessitent un apprentissage**."
     ]},
     { h: "PIM corporels et PIM cognitifs", body: [
       "Les perceptions peuvent être **sensorielles ou mentales**, les actions **motrices ou mentales**. On distingue :",
@@ -600,6 +610,7 @@ const MODULES = [
       "Un PIM est un **mode d’emploi pour se concentrer**. On l’explicite **dans les situations difficiles** : erreurs d’inattention, étourderies, distractions.",
       "S’il n’y a **pas de problème** pour se concentrer, inutile de réfléchir à un PIM : il ne faut pas se compliquer la vie.",
       "Pour certains, un PIM « expert » suffit ; pour d’autres, il faut décomposer plus finement. On ne peut pas descendre au niveau des cycles perception-action, hors de la conscience. La difficulté est de **décomposer au bon niveau d’expertise** pour le patient.",
+      { img: "schema-pim-expertise", cap: "Ajuster le niveau de décomposition au niveau d’expertise, au-dessus de la limite de la conscience", w: 520 },
       { note: "Pour vous entraîner à décomposer : les applications « Décomposer une tâche complexe » et « Bibliothèque PIM » de cette formation." }
     ]}
   ],
@@ -622,10 +633,11 @@ const MODULES = [
       { visual: "capture" },
       "La **capture** est une réorientation réflexe et brève de l’attention, d’une fraction de seconde. On ne peut pas vraiment y résister, et elle est **utile** : elle oriente vers les informations importantes pour l’organisme.",
       "La **captivation** est une **cascade de cycles perception-action** qui suit la capture. L’intensité d’une distraction se mesure à la **durée** de la captivation. Elle peut être **motrice** (le corps s’active), **cognitive** (une suite de pensées) ou **émotionnelle**, et ces engrenages s’entraînent.",
+      { img: "schema-captivations", cap: "Les trois mécanismes de captivation de l’attention", w: 400 },
       { seance: "Je corrige des copies et un SMS arrive. Je jette un œil à l’icône puis je reviens à mon travail : simple capture. Je prends le téléphone et je réponds : captivation." }
     ]},
     { h: "RAPPEL : six repères pour garder l’équilibre", body: [
-      { img: "rappel", cap: "RAPPEL", w: 90, side: true },
+      { img: "schema-rappel", cap: "RAPPEL : réagir aux distractions externes et internes, s’appuyer sur les bons automatismes", w: 520 },
       { visual: "rappel" },
       "Le but n’est pas de résister à la capture mais de **sentir les premiers signes** de la captivation, pour se rétablir comme un funambule avant la chute."
     ]},
@@ -691,7 +703,7 @@ const MODULES = [
       { note: "Gestion exécutive et gestion des émotions s’influencent dans les deux sens : pour sortir de la spirale, on agit sur les deux." }
     ]},
     { h: "L’architecture cognitive", body: [
-      { visual: "archi" },
+      { img: "schema-architecture-cognitive", cap: "L’architecture cognitive : l’attention (la fourchette), la mémoire de travail (l’établi), la mémoire à long terme (la bibliothèque)", w: 760 },
       "Mémoriser, c’est **encoder** (transférer vers la mémoire à long terme), **consolider** (relier aux connaissances existantes) et **récupérer** (rappeler en mémoire de travail). L’oubli est naturel : une information non encodée se perd en mémoire de travail ; en mémoire à long terme, ce sont les connexions qui se perdent.",
       "Pour retenir à long terme, il faut créer et entretenir des **réseaux de connaissances richement connectés**."
     ]},
@@ -785,7 +797,8 @@ const MODULES = [
         "**Vérifier si les objectifs sont atteints** : observations, fiche RAPPEL (prise de conscience avant ou après la chute), retours de la famille et des enseignants.",
         "**Reprendre les stratégies** à la lumière de cette analyse : travailler isolément le PIM qui pose problème, ajuster la poutre et les 3 A.",
         "**Choisir la méthode** la plus adaptée pour que chaque personne puisse appliquer le nouveau programme."
-      ]}
+      ]},
+      { img: "schema-decomposition-pim-jeux", cap: "Un PIM qui pose problème dans la tâche complexe peut être travaillé à part, par un entraînement spécifique, un jeu ou une activité ludique", w: 640 }
     ]}
   ],
   retenir: [
@@ -810,6 +823,7 @@ const MODULES = [
     { h: "La théorie de la charge cognitive", body: [
       "Développée par John Sweller, présentée en France notamment par André Tricot. Telle qu’elle est présentée dans la formation :",
       { visual: "charges" },
+      { img: "schema-architecture-cognitive", cap: "Sur le schéma de l’architecture cognitive, les trois charges apparaissent à l’entrée : superflu (extrinsèque), tâche (intrinsèque), apprentissage (essentielle)", w: 620 },
       "**Tout apprentissage scolaire est, dans le meilleur des cas, une double tâche et, dans le pire des cas, une triple tâche.** C’est pourquoi les apprentissages sont si exigeants, surtout quand les fonctions exécutives sont fragiles."
     ]},
     { h: "Utile en remédiation cognitive", body: [
@@ -1449,27 +1463,14 @@ const Frame = ({ title, hint, children, id }) => html`<section className="frame"
   <div className="frame-body">${children}</div></section>`;
 const Meter = ({ v, good }) => html`<div className=${"meter" + (good ? " good" : "")} role="presentation"><i style=${{ width: Math.max(0, Math.min(100, v)) + "%" }}></i></div>`;
 const PageHead = ({ kicker, title, sub }) => html`<header className="page-head">${kicker && html`<div className="crumbs">${kicker}</div>`}<h1>${typeof title === "string" ? nb(title) : title}</h1>${sub && html`<p>${sub}</p>`}</header>`;
-const Fig = ({ img, cap, w }) => html`<figure className="fig"><img src=${IMG(img)} alt=${cap || ""} loading="lazy" style=${w ? { width: w + "px" } : null} />${cap && html`<figcaption>${cap}</figcaption>`}</figure>`;
+const Fig = ({ img, cap, w }) => { const im = html`<img src=${IMG(img)} alt=${cap || ""} loading="lazy" style=${w ? { width: w + "px" } : null} />`;
+  return html`<figure className="fig">${img.startsWith("schema-") ? html`<a href=${IMG(img)} target="_blank" rel="noopener" title="Ouvrir le schéma en grand">${im}</a>` : im}${cap && html`<figcaption>${cap}${img.startsWith("schema-") ? " · cliquer pour agrandir" : ""}</figcaption>`}</figure>`; };
 const PimCard = ({ p }) => html`<div className="pim">${p.t && html`<div className="pim-tag">${p.t}</div>`}
   <div className="pim-row kI"><span className="pim-lab">Intention</span><span>${p.I}</span></div>
   <div className="pim-row kP"><span className="pim-lab">Perception</span><span>${p.P}</span></div>
   <div className="pim-row kM"><span className="pim-lab">Manière d’agir</span><span>${p.M}</span></div></div>`;
 
 /* ---------- Visuels ---------- */
-function Beam({ kind }) {
-  const sup = (x, top, h) => html`<line x1=${x} y1=${top} x2=${x} y2=${top + h} stroke="currentColor" strokeWidth="2" />`;
-  if (kind === "long") return html`<svg viewBox="0 0 240 70" role="img" aria-label="Poutre courte et poutre longue">
-    <rect x="10" y="20" width="60" height="7" rx="2" fill="var(--accent)" />${sup(18, 27, 30)}${sup(62, 27, 30)}
-    <rect x="95" y="20" width="135" height="7" rx="2" fill="var(--accent)" />${sup(103, 27, 30)}${sup(222, 27, 30)}
-    <line x1="0" y1="58" x2="240" y2="58" stroke="var(--line-strong)" /><text x="40" y="12" textAnchor="middle" fontSize="11" fill="currentColor">courte</text><text x="162" y="12" textAnchor="middle" fontSize="11" fill="currentColor">longue</text></svg>`;
-  if (kind === "haut") return html`<svg viewBox="0 0 240 70" role="img" aria-label="Poutre basse et poutre haute">
-    <rect x="15" y="44" width="80" height="7" rx="2" fill="var(--accent)" />${sup(25, 51, 7)}${sup(85, 51, 7)}
-    <rect x="135" y="12" width="80" height="7" rx="2" fill="var(--accent)" />${sup(145, 19, 39)}${sup(205, 19, 39)}
-    <line x1="0" y1="58" x2="240" y2="58" stroke="var(--line-strong)" /><text x="55" y="36" textAnchor="middle" fontSize="11" fill="currentColor">basse</text><text x="175" y="8" textAnchor="middle" fontSize="11" fill="currentColor" dy="2">haute</text></svg>`;
-  return html`<svg viewBox="0 0 240 70" role="img" aria-label="Poutre étroite et poutre large">
-    <path d="M20 40 L100 40 L92 46 L12 46 Z" fill="var(--accent)" /><path d="M140 30 L225 30 L205 50 L120 50 Z" fill="var(--accent)" />
-    <line x1="0" y1="60" x2="240" y2="60" stroke="var(--line-strong)" /><text x="56" y="30" textAnchor="middle" fontSize="11" fill="currentColor">étroite</text><text x="172" y="22" textAnchor="middle" fontSize="11" fill="currentColor">large</text></svg>`;
-}
 const NEURONS = [
   ["neurone-chef", "Neurone chef", "Lobe frontal", "Fonctions exécutives : fixe l’objectif et le plan, dit stop aux pensées et perceptions non pertinentes, maintient l’attention, réactive les informations importantes."],
   ["neurone-perception", "Neurone perception", "Cortex sensoriels", "Perçoit le monde grâce aux cinq sens et participe à la création des images mentales (variantes : visuel, auditif, tactile, sens du nombre)."],
@@ -1489,34 +1490,10 @@ const EMOS = [
 ];
 function Visual({ k }) {
   switch (k) {
-    case "forces": return html`<div className="forces">
-      <div className="col">
-        <div className="force auto"><b>Système de détection</b>Attire l’attention, par réflexe, vers ce qui est saillant : forme, mouvement, couleur, bruit, odeur.</div>
-        <div className="force auto"><b>Pilotage automatique</b>Propose des actions selon les habitudes liées au contexte.</div>
-        <div className="force auto"><b>Pensées automatiques</b>Fait surgir des pensées : le vagabondage de l’esprit.</div>
-        <div className="force auto"><b>Désirs et aversions</b>Oriente vers le plaisir, signale le déplaisir, les erreurs (neurone aimant).</div>
-      </div>
-      <div className="center">
-        <svg viewBox="0 0 150 90" width="150" role="img" aria-label="L’attention en équilibre, tirée par des forces automatiques et par le système stratégique">
-          <line x1="10" y1="62" x2="140" y2="62" stroke="var(--line-strong)" strokeWidth="5" strokeLinecap="round" />
-          <circle cx="75" cy="40" r="12" fill="var(--accent)" />
-          <path d="M60 40 H22 M28 34 l-6 6 6 6" stroke="var(--warn)" strokeWidth="2.2" fill="none" />
-          <path d="M90 40 H128 M122 34 l6 6 -6 6" stroke="var(--kI)" strokeWidth="2.2" fill="none" />
-          <text x="75" y="82" textAnchor="middle" fontSize="11" fill="currentColor">attention</text></svg>
-        <span>Processus automatiques ← → processus volontaire</span>
-      </div>
-      <div className="col">
-        <div className="force strat"><b>Système stratégique</b>Processus volontaire : arbitre les priorités, fixe l’objectif et le plan d’action, stabilise l’attention (neurone chef).</div>
-        <div className="force strat"><b>Motivation</b>Fournit l’énergie au système stratégique. Sans elle, l’attention est tirée dans tous les sens.</div>
-      </div></div>`;
     case "cycles": return html`<div className="grid2x2" role="table" aria-label="Les quatre types de cycles perception-action">
       <span></span><span className="h" role="columnheader">Action motrice</span><span className="h" role="columnheader">Action mentale</span>
       <span className="h" role="rowheader">Perception sensorielle</span><div className="c">Voir un objet et l’attraper<i>sensoriel → moteur</i></div><div className="c">Lire ou écouter une histoire et l’imaginer<i>sensoriel → mental</i></div>
       <span className="h" role="rowheader">Perception mentale</span><div className="c">Repenser au film d’hier et le raconter<i>mental → moteur</i></div><div className="c">Faire un calcul mental, associer des idées<i>mental → mental</i></div></div>`;
-    case "poutre": return html`<div className="beams">
-      <div className="beam"><b>Longueur</b><${Beam} kind="long" /><p>Durée du maintien de l’attention.</p></div>
-      <div className="beam"><b>Hauteur</b><${Beam} kind="haut" /><p>Risque encouru en cas de distraction.</p></div>
-      <div className="beam"><b>Largeur</b><${Beam} kind="large" /><p>Tolérance de la tâche à la distraction : les écarts possibles sans chute.</p></div></div>`;
     case "troisA": return html`<div className="aa">
       <div className="acard v"><img src=${IMG("a-vert")} alt="" /><div><b>A vert</b><span>Poutre large et basse : l’attention peut décrocher sans danger.</span></div></div>
       <div className="acard o"><img src=${IMG("a-orange")} alt="" /><div><b>A orange</b><span>Poutre plus étroite ou plus haute : l’attention peut décrocher, mais pas longtemps.</span></div></div>
@@ -1530,10 +1507,6 @@ function Visual({ k }) {
     case "decompo": return html`<div className="tree">
       <div className="node max"><img src=${IMG("maximoi")} alt="" /><span>Maximoi<br /><small>« Mon objectif : ranger ma chambre »</small></span></div>
       <div className="branches">${["Porter les habits sales au panier", "Remettre les livres sur l’étagère", "Descendre ma poubelle", "Descendre la vaisselle sale"].map((t, i) => html`<div className="node" key=${i}><small>minimoi ${i + 1}</small>${t}</div>`)}</div></div>`;
-    case "pimdef": return html`<div className="pimdef">
-      <div className="kI"><div className="who"><img src=${IMG("neurone-chef")} alt="" /><span className="pim-lab">Intention</span></div><p>Ce que je veux réussir : je visualise le résultat. Travail du neurone chef.</p></div>
-      <div className="kP"><div className="who"><img src=${IMG("neurone-perception")} alt="" /><span className="pim-lab">Perception</span></div><p>Où je porte mon attention : la cible, sensorielle ou mentale. Travail du neurone perception.</p></div>
-      <div className="kM"><div className="who"><img src=${IMG("neurone-action")} alt="" /><span className="pim-lab">Manière d’agir</span></div><p>La seule action à faire, motrice ou mentale. Travail du neurone action.</p></div></div>`;
     case "iac": return html`<div className="iac">
       <div><b>Intention</b><span>Visualiser le résultat. C’est le filtre qui trie perceptions utiles et distractions.</span></div>
       <div><b>Attention</b><span>Qualité du contact avec la bonne cible (la perception).</span></div>
@@ -1545,16 +1518,11 @@ function Visual({ k }) {
         <div className="chain"><span className="chip neutral">motrice</span><span className="chip neutral">cognitive</span><span className="chip neutral">émotionnelle</span></div></div></div>`;
     case "rappel": return html`<div className="vis"><div className="rappel">
       ${[["R", "Regard", "je ramène mon regard", "ext"], ["A", "Attention", "je sens mon attention partir", "ext"], ["P", "Posture", "je sens mon corps s’orienter", "ext"], ["P", "Pensées", "je repère et je note le PAM", "int"], ["E", "Étirement", "je sens le corps partir vers le PAM", "int"], ["L", "Lâcher-prise", "concentration douce, sans effort", "lp"]].map(([L, w, d, c], i) => html`<div className=${"rl " + c} key=${i}><span className="L">${L}</span><b>${w}</b><span>${d}</span></div>`)}
-      </div><div className="rappel-legend"><span><i style=${{ background: "var(--accent)" }}></i>distractions externes (RAP)</span><span><i style=${{ background: "var(--kP)" }}></i>distractions internes (P, E)</span><span><i style=${{ background: "var(--good)" }}></i>lâcher-prise</span><span>Attention et Pensées : niveau cognitif · Posture et Étirement : niveau corporel</span></div></div>`;
+      </div><div className="rappel-legend"><span><i style=${{ background: "var(--rx)" }}></i>distractions externes (RAP)</span><span><i style=${{ background: "var(--ri)" }}></i>distractions internes (P, E)</span><span><i style=${{ background: "var(--rl)" }}></i>lâcher-prise</span><span>Attention et Pensées : niveau cognitif · Posture et Étirement : niveau corporel</span></div></div>`;
     case "cine": return html`<div className="cine">
       ${[["C", "Contrôle faible", "Tu n’as pas le choix, tu dois aller à l’école."], ["I", "Imprévisibilité", "Une évaluation surprise."], ["N", "Nouveauté", "Tu arrives dans un nouvel établissement."], ["É", "Ego menacé", "Tu es interrogé devant toute la classe."]].map(([L, b, s]) => html`<div key=${L}><span className="L">${L}</span><b>${b}</b><span>${s}</span></div>`)}</div>`;
-    case "archi": return html`<div className="vis"><div className="archi">
-      <div><span className="ic">La fourchette</span><b>Attention</b><span>Sélectionne les informations à traiter. Elle est limitée.</span></div>
-      <div><span className="ic">L’établi</span><b>Mémoire de travail</b><span>Espace limité où l’on manipule les informations : comparer, analyser, transformer.</span></div>
-      <div><span className="ic">La bibliothèque</span><b>Mémoire à long terme</b><span>Bibliothèque infinie : connaissances (faits, concepts, souvenirs) et procédures.</span></div></div>
-      <div className="arrowrow"><span>sélection →</span><span>encodage → / ← récupération</span><span>consolidation : relier aux connaissances</span></div></div>`;
     case "charges": return html`<div className="charges">
-      ${[["Charge essentielle", "Apprendre : construire et mémoriser la connaissance", "var(--good)", "à favoriser"], ["Charge intrinsèque", "Réaliser la tâche", "var(--kI)", "à gérer"], ["Charge extrinsèque", "Traiter les informations inutiles", "var(--bad)", "à réduire"]].map(([t, d, c, a]) => html`<div className="charge" key=${t}><div><b>${t}</b><div className="small muted">${a}</div></div><div className="bar" style=${{ background: c }}>${d}</div></div>`)}</div>`;
+      ${[["Charge essentielle", "Apprendre : construire et mémoriser la connaissance", "#5B9BD5", "à favoriser"], ["Charge intrinsèque", "Réaliser la tâche", "#E67E22", "à gérer"], ["Charge extrinsèque", "Traiter les informations inutiles (superflu)", "#C0392B", "à réduire"]].map(([t, d, c, a]) => html`<div className="charge" key=${t}><div><b>${t}</b><div className="small muted">${a}</div></div><div className="bar" style=${{ background: c }}>${d}</div></div>`)}</div>`;
     default: return null;
   }
 }
